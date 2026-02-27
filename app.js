@@ -4,6 +4,8 @@
 
 //Import 
 const express = require("express");
+const fs = require("fs");    //using fs to dynamically read data from products JSON file
+
 //Express App
 const app = express();
 //View Engine
@@ -18,6 +20,14 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 app.listen(3000);
+
+//Passing products into EJS (sample products)
+app.get("/", (req, res) => {
+    const data = fs.readFileSync("./Products.json");
+    const products = JSON.parse(data);
+
+    res.render("index", { products });
+});
 
 //Home Page
 app.get("/", (request, response) => {
@@ -52,4 +62,9 @@ app.get("/about", (request, response) => {
 //Stores Page
 app.get("/stores", (request, response) => {
     response.render("stores", {title: "Stores"});
+});
+
+//Profile Page
+app.get("/profile", (request, response) => {
+    response.render("profile", {title: "Profile"});
 });
