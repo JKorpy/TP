@@ -4,8 +4,11 @@
 
 //Import 
 const express = require("express");
+
 //importing the express module
 const session = require('express-session')
+//using fs to dynamically read data from products JSON file
+const fs = require("fs");    
 //Express App
 const app = express();
 //View Engine
@@ -28,6 +31,14 @@ app.use(session({
 
 
 app.listen(3000);
+
+//Passing products into EJS (sample products)
+app.get("/", (req, res) => {
+    const data = fs.readFileSync("./Products.json");
+    const products = JSON.parse(data);
+
+    res.render("index", { products });
+});
 
 //Home Page
 app.get("/", (request, response) => {
@@ -79,3 +90,9 @@ app.get("/stores", (request, response) => {
 app.get("/list", (request, response) => {
     response.render("list", {title: "Shopping List"});
 });
+
+//Profile Page
+app.get("/profile", (request, response) => {
+    response.render("profile", {title: "Profile"});
+});
+
