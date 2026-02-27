@@ -1,12 +1,32 @@
-<header>
-    <nav>
-        <ul>
-            <li><a href="/">Home</a></li>      
-            <li><a href="/catalogue">Catalogue</a></li>
-            <li><a href="/stores">Stores</a></li>
-            <li><a href="/about">About Us</a></li>
-            <li><a href="/contact">Contact Us</a></li>                                               
-        </ul>
-    </nav>
-</header>
+<nav> 
+  <a href="/">
+    <img src="/img/home_svg.svg" alt="Home" id="home-icon">
+  </a> |
+    <a href="/stores">
+      <img src="/img/stores_svg.svg" alt="Stores" id="stores-icon">
+    </a>  |
+    <a href="/myList">
+      <img src="/img/myList_svg.svg" alt="MyList" id="myList-icon">
+    </a>  |
+    <a href="/contact">
+      <img src="/img/contact_svg.svg" alt="Contact" id="contact-icon">
+    </a>  |
+    <a href="/profile  ">
+      <img src="/img/profile_svg.svg" alt="Profile" id="profile-icon">
+    </a>  |
 
+
+  <!-- SEARCH -->
+  <div class="searchBar">
+    <img src="/img/search_svg.svg" alt="Search" id="search-icon">
+
+    <form id="search-popup" class="hidden" action="/shop/search" method="GET">
+      <input type="text" name="q" id="search-input" placeholder="Search products..." required>
+      <button type="submit" id="search-btn">Search</button>
+    </form>
+  </div>
+
+
+  <!-- JS -->
+  <script src="/js/search.js"></script>
+</nav>
