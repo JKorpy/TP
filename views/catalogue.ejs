@@ -1,13 +1,120 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
     <%- include("./partials/header.ejs") %>   
 <body>
     <%- include("./partials/nav.ejs") %>
-    <h1>Title</h1>
-    <h3>Browse Products!</h3>
-    <section class="catalogue-container">
-        
-    </section>
+
+  <div class="catalogue-container">
+    <div class="catalogue-header">
+        <h1>Catalogue - Browse Products!</h1>
+    </div>
+    <!-- Sidebar -->
+    <aside class="catalogue-sidebar">
+        <div class="sticky-sidebar">
+            <h2>Filters</h2>
+            <form class="catalogue-filter">
+            <!-- Search -->
+                <div class="filter-group">
+                <label for="search">Search</label>
+                <input type="text" id="search" placeholder="Search products...">
+                </div>
+                <!-- Select Dropdown -->
+                <div class="filter-group">
+                    <label for="select">Select</label>
+                    <select class="category">
+                    <option value="ascending">Ascending Order</option>
+                    <option value="descending">Descending Order</option>
+                    <option value="lowPrice">Price - Lowest First</option>
+                    <option value="highPrice">Price - Highest FIrce</option>
+                    </select>
+                </div>
+                <!-- Select Dropdown -->
+                <div class="filter-group">
+                    <label for="category">Category</label>
+                    <select class="category">
+                    <option value="food">Food</option>
+                    <option value="clothe">Clothes</option>
+                    <option value="electronic">Electronics</option>
+                    </select>
+                </div>                
+                <!-- Checkbox Filters -->
+                <div class="filter-group">
+                    <label>Brand</label>
+                    <!-- Brand -->
+                    <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="check" value="lidl-val">
+                        <span>Lidl</span>
+                    </label>
+                    <!-- Clothes -->
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="check" value="aldi-val">
+                        <span>Aldi</span>
+                    </label>
+                    <!-- Item -->
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="check" value="supervalu-val">
+                        <span>Supervalu</span>
+                    </label>
+                    </div>
+                </div>
+                <!-- Submit Button -->
+                <button type="submit" class="filterBTN">Apply Filters</button>
+            </form>
+        </div>
+    </aside>
+    <!-- Contents -->
+    <main class="catalogue-content">
+      <div class="cards">
+        <% for (let i=0; i < 12; i++) { %>
+            <!-- Product Card -->
+            <div class="catalogue-card" data-id="">
+                <!-- Image -->
+                <div class="card-image">
+                    <img class="product-image"src="https://picsum.photos/400/300" alt="Product image">
+                </div>
+                <!-- Description -->
+                <div class="card-content">
+                    <!-- Title -->
+                    <h3 class="card-title">
+                        Item this is a very nice product 500ml and 600gb. What would you like?
+                    </h3>
+                    <!-- Price & Button -->
+                    <div class="card-footer">
+                        <p class="card-price">€5.50</p>
+                        <button class="cardBTN">Add to List</button>
+                    </div>
+                </div>
+            </div>
+        <% } %> 
+      </div>
+    </main>
+    <!-- Pagination -->
+    <footer class="catalogue-footer">
+        <p>Showing 1 - 12 of 96</p>
+        <!-- Page Numbers -->
+        <div class="page-numbers">
+            <!-- Previous Page -->
+            <button class="pageBTN">« Prev</button>
+            <button class="page-number active">1</button>
+            <button class="page-number">2</button>
+            <button class="page-number">3</button>
+            <button class="page-number">4</button>
+            <button class="page-number">5</button>
+            <!-- Next Page -->
+            <button CLASS="pageBTN">Next »</button>            
+        </div>
+    </footer>
+  </div>    
     <%- include("./partials/footer.ejs") %> 
+    <script>
+        document.querySelectorAll(".product-image").forEach(action => {
+            action.addEventListener("click", function() {
+                window.location.href = "https://www.youtube.com/"
+            });
+        });        
+    </script>
 </body>
 </html>
