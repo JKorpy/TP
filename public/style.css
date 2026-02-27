@@ -416,7 +416,7 @@ button:hover {
 
 .list-footer td {
     background: var(--primary);
-    color: white;
+    color: #FFF0DD;
     font-weight: bold;
     text-align: right;
     padding: 16px;
