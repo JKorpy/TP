@@ -18,6 +18,7 @@
   "homepage": "https://github.com/IA05/TP#readme",
   "dependencies": {
     "ejs": "^4.0.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "express-session": "^1.19.0"
   }
 }
