@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include("./partials/header.ejs") %>   
+<body>
+    <%- include("./partials/nav.ejs") %>
+    <div class="list-container">
+        <!-- Title -->
+        <header class="list-header">
+            <h1>Shopping List</h1>
+        </header>
+        <!-- Table -->
+        <section class="list-table">
+            <table>
+                <colgroup>
+                    <col style="width: 50%;">
+                    <col style="width: 5%;">
+                    <col style="width: 5%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                </colgroup>
+                <!-- Header -->
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+                <!-- Rows (Name, Quantity, Price, Edit, Delete) -->
+                <% for (let i=0; i < 10; i++) { %>
+                    <tr>
+                        <td class="product-name">Product Name</td>
+                        <td class="product-qty">1</td>
+                        <td class="product-price">£0.01</td>
+                        <td class="edit-buttons">
+                            <button type="button" class="quantity-btn">−</button>
+                            <button type="button" class="quantity-btn">+</button>
+                        </td>
+                        <td>
+                            <button type="button" class="product-delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                <% } %>
+                <!-- Final Row (Total) --> 
+                <tr class="list-footer">
+                    <td colspan="5">Total: £0.00</td>
+                </tr>
+            </table>
+        </section>
+    </div>
+    <%- include("./partials/footer.ejs") %> 
+</body>
+</html>
