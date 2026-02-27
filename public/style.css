@@ -1,0 +1,443 @@
+/*
+    Tips:
+    Media query breakpoints...
+        Extra Small.......@media (max-width: 600px)
+        Small.............@media (min-width: 600px)
+        Medium............@media (min-width: 768px)
+        Large.............@media (min-width: 992px)
+        Extra Large.......@media (min-width: 1200px)
+
+
+*/
+
+/**
+ * CONTENTS
+ *
+ * SETTINGS
+ * Global...............Globally-available variables and config.
+ *
+ * BASE
+ *
+ * CATALOGUE
+ * Header...............Header of the catalogue
+ * Sidebar..............Filter section
+ * Content..............List of products section
+ * Footer...............Footer of the catalogue
+ * Responsive...........Media Queries
+ *
+ * LIST
+ * Header...............Title of the shopping list
+ * Table................Table of products
+ * Footer...............Total price of products
+ * 
+ * BIBLOGRAPHY
+ * W3Schools............Website
+ * Youtube..............Social Media
+ * CSS-Guidelines.......Document
+ */
+
+/*------------------------------------*\
+  #SETTINGS
+\*------------------------------------*/
+
+:root {
+    /*  Colour Pallete: https://colorhunt.co/palette/e2a16ffff0ddd1d3d486b0bd */
+    --primary: #E2A16F;
+    --secondary: #FFF0DD;
+    --teritary: #D1D3D4;
+    --quaternary: #86B0BD;
+
+    --color-text: 0;
+    --color-text-secondary: 0;
+    --color-bg: 0;
+    --color-bg-secondary: 0;
+    --color-shadow: 0;
+
+    /* Border */
+    --border-radius: 8px;
+    /* Shadow */
+    --box-shadow: 0 0 0 0 black;
+    /* Catalogue */
+    --card-size: auto;
+}
+
+/*------------------------------------*\
+  #BASE
+\*------------------------------------*/
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 0;
+}
+
+body {
+
+}
+
+h1 {
+
+}
+
+p {
+
+}
+
+button {
+    transition: 0.2s ease;
+}
+
+button:hover {
+    transform: scale(0.95);
+}
+
+/*------------------------------------*\
+  #CATALOGUE
+\*------------------------------------*/
+
+/* Grid Wrapper
+    1. Header (FUll length)
+    2. Sidebar (Left)
+    3. Main Content (Right)
+    4. Footer (Full length)
+*/
+
+.catalogue-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+
+}
+
+.catalogue-header, .catalogue-footer {
+    grid-column: 1 / -1; 
+}
+
+
+/*------------------------------------*\
+  #Header
+\*------------------------------------*/
+
+.catalogue-header {
+    padding: 30px 0;
+    border-bottom: 10px solid var(--primary);
+    text-align: center;
+}
+
+/*------------------------------------*\
+  #Sidebar
+\*------------------------------------*/
+
+.catalogue-sidebar {
+    background-color: var(--primary);
+    padding: 20px;
+    color: var(--secondary);
+    
+}
+
+.sticky-sidebar {
+    position: sticky;
+    top: 20px;   
+    align-self: start; 
+}
+
+.catalogue-sidebar h2 {
+    margin-bottom: 30px;
+}
+
+/* Filter Form */
+
+.catalogue-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.filter-group input, .filter-group select {
+    padding: 8px;
+    border-radius: var(--border-radius);
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+
+
+
+/* Filter Button */
+
+.filterBTN {
+    padding: 10px;
+    background: var(--quaternary);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--secondary);
+    transition: 0.2s ease;
+}
+
+/*------------------------------------*\
+  #Content
+\*------------------------------------*/
+
+.catalogue-content {
+
+    padding: 30px;
+}
+
+/* Card  */
+
+.catalogue-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.card-image img:hover {
+    transform: scale(0.95);
+    cursor: pointer;
+}
+
+.card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card-title {
+    font-size: clamp(16px, 1.5vw, 18px);
+    margin-bottom: 10px;
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; 
+    margin-top: auto;
+    gap: 10px;
+}
+
+.card-price {
+    font-weight: bold;
+    font-size: clamp(18px, 1.5vw, 22px);
+}
+
+.cardBTN {
+    padding: 8px 12px;
+    background: var(--quaternary);
+    color: var(--secondary);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+
+/*------------------------------------*\
+  #FOOTER                
+\*------------------------------------*/
+
+.catalogue-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-top: 10px solid var(--primary);
+
+}
+
+.page-numbers {
+    display: flex;
+    gap: 8px;
+}
+
+.pageBTN, .page-number {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.page-number.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.pageBTN:hover, .page-number:hover {
+    transform: scale(0.95);
+}
+
+
+/*------------------------------------*\
+  #Responsive Catalogue
+\*------------------------------------*/
+
+/*Medium*/
+@media (max-width: 768px) {
+    .catalogue-container {
+        grid-template-columns: 1fr;
+    }
+
+    .catalogue-sidebar {
+        text-align: center;
+    }
+
+    .catalogue-footer {
+        flex-direction: column;
+    }
+}
+
+/*------------------------------------*\
+  #LIST
+\*------------------------------------*/
+
+/* Container */
+
+.list-container {
+    margin: 40px auto;
+    width: 80%;  
+}
+
+/*------------------------------------*\
+  #Header
+\*------------------------------------*/
+
+.list-header {
+    margin-bottom: 20px;
+    text-align: center;    
+    color: var(--primary);
+}
+
+/*------------------------------------*\
+  #Table
+\*------------------------------------*/
+
+.list-table table {
+    border-collapse: collapse;
+    background-color: white;
+    width: 100%;    
+}
+
+.list-table th, .list-table td {
+    padding: 14px;
+    text-align: center;
+    
+}
+
+.list-table th {
+    background-color: var(--primary);
+    color: white;
+}
+
+.list-table tr:nth-child(even) {
+    background-color: var(--secondary);
+}
+
+/* Edit Buttons */
+.edit-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.quantity-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    background-color: var(--quaternary);
+    color: white;
+}
+
+
+/* Delete Button */
+.product-delete-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    background-color: lightcoral;
+    color: white;
+}
+
+/*------------------------------------*\
+  #Footer
+\*------------------------------------*/
+
+.list-footer td {
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+    text-align: right;
+    padding: 16px;
+}
+
+/*------------------------------------*\
+  #Biblography
+\*------------------------------------*/
+/*
+ * W3Schools
+ * https://www.w3schools.com/css/css_align.asp
+ * https://www.w3schools.com/css/css3_buttons.asp
+ * https://www.w3schools.com/css/css_grid.asp
+ * https://www.w3schools.com/css/css3_pagination.asp
+ * https://www.w3schools.com/cssref/func_clamp.php
+ * https://www.w3schools.com/css/css_positioning.asp
+ * https://www.w3schools.com/css/css_table.asp
+ * https://www.w3schools.com/html/html_table_colgroup.asp 
+ *
+ * Youtube
+ *
+ * CSS-Guidelines
+ * https://cssguidelin.es/#syntax-and-formatting
+ */

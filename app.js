@@ -53,3 +53,8 @@ app.get("/about", (request, response) => {
 app.get("/stores", (request, response) => {
     response.render("stores", {title: "Stores"});
 });
+
+//Shopping List Page
+app.get("/list", (request, response) => {
+    response.render("list", {title: "Shopping List"});
+});
