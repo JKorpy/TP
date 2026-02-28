@@ -1,3 +1,32 @@
+/*  Colour Pallete: https://colorhunt.co/palette/e2a16ffff0ddd1d3d486b0bd */
+
+/**
+ * CONTENTS
+ *
+ * SETTINGS
+ *
+ * BASE
+ * Typograpghy..........Default Fonts
+ * Navbar...............Default navigation bar
+ *
+ * CATALOGUE
+ * Sidebar..............Filter section
+ * Content..............List of products section
+ * Footer...............Footer of the catalogue
+ * Responsive...........Media Queries
+ *
+ * LIST
+ * Table................Table of products
+ * Buttons..............Interactive buttons within the table
+ * Footer...............Total price of products
+ * 
+ * BIBLOGRAPHY
+ * W3Schools............Website
+ * Youtube..............Social Media
+ * CSS-Guidelines.......Document
+ */
+
+
 /*------------------------------------*\
   #SETTINGS
 \*------------------------------------*/
@@ -8,7 +37,7 @@
     padding: 0;
     box-sizing: border-box;
 }
-/*  Colour Pallete: https://colorhunt.co/palette/e2a16ffff0ddd1d3d486b0bd */
+
 
 /* THEME VARIABLES */
 :root {
@@ -48,15 +77,6 @@ body {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-
-button {
-    transition: 0.2s ease;
-}
-
-button:hover {
-    transform: scale(0.95);
-}
-
 /* Floating Dark Mode Button (fixed)*/
 .theme-toggle {
     position: fixed;
@@ -86,7 +106,9 @@ button:hover {
 
 
 
-/* TYPOGRAPHY */
+/*------------------------------------*\
+  #Typography
+\*------------------------------------*/
 h1 {
     font-size: 2.6rem;
     margin-bottom: 20px;
@@ -107,7 +129,9 @@ p {
 }
 
 
-/* NAVIGATION BAR */
+/*------------------------------------*\
+  #Navbar
+\*------------------------------------*/
 nav {
     background: var(--surface);
     padding: 14px 35px;
@@ -293,41 +317,6 @@ footer {
     }
 }
 
-/**
- * CONTENTS
- *
- * SETTINGS
- * Global...............Globally-available variables and config.
- *
- * BASE
- *
- * CATALOGUE
- * Header...............Header of the catalogue
- * Sidebar..............Filter section
- * Content..............List of products section
- * Footer...............Footer of the catalogue
- * Responsive...........Media Queries
- *
- * LIST
- * Header...............Title of the shopping list
- * Table................Table of products
- * Footer...............Total price of products
- * 
- * BIBLOGRAPHY
- * W3Schools............Website
- * Youtube..............Social Media
- * CSS-Guidelines.......Document
- */
-
-
-
-
-
-
-
-
-
-
 /*------------------------------------*\
   #CATALOGUE
 \*------------------------------------*/
@@ -339,51 +328,43 @@ footer {
     4. Footer (Full length)
 */
 
-.catalogue-container {
+#catalogue-container {
+    width: 100%;
     display: grid;
     grid-template-columns: 250px 1fr;
-
 }
 
-.catalogue-header, .catalogue-footer {
+#catalogue-footer {
     grid-column: 1 / -1; 
 }
 
 
 /*------------------------------------*\
-  #Header
-\*------------------------------------*/
-
-.catalogue-header {
-    padding: 30px 0;
-    border-bottom: 10px solid var(--primary);
-    text-align: center;
-}
-
-/*------------------------------------*\
   #Sidebar
 \*------------------------------------*/
 
-.catalogue-sidebar {
-    background-color: var(--primary);
+#catalogue-sidebar {
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
     padding: 20px;
-    color: var(--secondary);
+    box-shadow: var(--shadow);
+    color: var(--text-primary);
     
 }
 
-.sticky-sidebar {
+#sticky-sidebar {
     position: sticky;
     top: 20px;   
     align-self: start; 
 }
 
-.catalogue-sidebar h2 {
+#catalogue-sidebar h2 {
     margin-bottom: 30px;
 }
 
 /* Filter Form */
 
-.catalogue-filter {
+#catalogue-filter {
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -401,7 +382,7 @@ footer {
 
 .filter-group input, .filter-group select {
     padding: 8px;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius);
     border: none;
     outline: none;
     font-size: 14px;
@@ -421,43 +402,37 @@ footer {
     cursor: pointer;
 }
 
-
-
-
 /* Filter Button */
 
-.filterBTN {
+#filterBTN {
     padding: 10px;
-    background: var(--quaternary);
     border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
+    border-radius: var(--radius);
     font-weight: bold;
-    color: var(--secondary);
-    transition: 0.2s ease;
+    color: var(--surface);
 }
 
 /*------------------------------------*\
-  #Content
+  #Cards
 \*------------------------------------*/
 
-.catalogue-content {
-
+#catalogue-cards {
     padding: 30px;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(220px, 1fr));
+    gap: 20px;    
 }
 
 /* Card  */
 
 .catalogue-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow); 
+    padding: 10px;
     display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-.cards {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(220px, 1fr));
-    gap: 20px;
 }
 
 
@@ -465,6 +440,7 @@ footer {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: var(--border-radius);
     transition: transform 0.2s ease;
 }
 
@@ -505,10 +481,10 @@ footer {
 
 .cardBTN {
     padding: 8px 12px;
-    background: var(--quaternary);
-    color: var(--secondary);
+    background: var(--accent);
+    color: var(--surface);
     border: none;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius);
     cursor: pointer;
     font-size: 14px;
 }
@@ -518,41 +494,41 @@ footer {
   #FOOTER                
 \*------------------------------------*/
 
-.catalogue-footer {
+#catalogue-footer {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    border-radius: 50px;
+    box-shadow: var(--shadow);
     gap: 15px;
-    padding: 10px 0;
-    border-top: 10px solid var(--primary);
-
+    width: fit-content;
+    margin: 30px auto;
+    padding: 14px 35px;
+    background: var(--surface);;
+    transition: background 0.3s ease;
 }
 
-.page-numbers {
+#catalogue-footer p,
+.page-btn,
+.page-number {
+    color: var(--text-primary);
+}
+    
+#page-numbers {
     display: flex;
     gap: 8px;
 }
 
-.pageBTN, .page-number {
+.page-btn, .page-number {
+    background: var(--surface);
     padding: 8px 12px;
-    border: 1px solid #ddd;
-    background: white;
     border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s ease;
 }
 
 .page-number.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+    background: var(--accent);
 }
-
-.pageBTN:hover, .page-number:hover {
-    transform: scale(0.95);
-}
-
 
 /*------------------------------------*\
   #Responsive Catalogue
@@ -560,25 +536,34 @@ footer {
 
 /*Medium*/
 @media (max-width: 1280px) {
-
-    .cards {
+    #catalogue-cards {
         grid-template-columns: repeat(3, minmax(220px, 1fr));
     }
 
 }
 
-@media (max-width: 600px) {
-    .catalogue-container {
+@media (max-width: 768px) {
+
+    #catalogue-container {
         grid-template-columns: 1fr;
     }
 
-    .cards {
+    #catalogue-sidebar {
+        text-align: center;
+    }
+
+    #catalogue-footer {
+        flex-direction: column;
+    }    
+
+    #catalogue-cards {
         grid-template-columns: repeat(1, minmax(220px, 1fr));
     }
 
-    .card-footer {
-        flex-direction: column; 
-    }
+    /* Text Sizes */
+    .card-title {
+        font-size: 22px;
+    }   
 
     .card-price {
         font-size: 25px;
@@ -586,21 +571,7 @@ footer {
 
     .cardBTN {
         font-size: 20px;
-    }    
-
-    .catalogue-sidebar {
-        text-align: center;
-    }
-
-    .catalogue-footer {
-        flex-direction: column;
-    }
-
-    .card-title {
-        font-size: 22px;
-    }   
-
-    
+    }        
 }
 
 /*------------------------------------*\
@@ -609,45 +580,48 @@ footer {
 
 /* Container */
 
-.list-container {
+#list-container {
+    background: var(--surface);
+    text-align: center;
+    max-width: 900px;
     margin: 40px auto;
-    width: 80%;  
-}
+    box-shadow: var(--shadow);
 
-/*------------------------------------*\
-  #Header
-\*------------------------------------*/
+}    
 
-.list-header {
-    margin-bottom: 20px;
-    text-align: center;    
-    color: var(--primary);
-}
 
 /*------------------------------------*\
   #Table
 \*------------------------------------*/
 
-.list-table table {
+#list-table {
     border-collapse: collapse;
-    background-color: white;
+    border: 1px solid black;
+    background-color: var(--surface);
     width: 100%;    
 }
 
-.list-table th, .list-table td {
-    padding: 14px;
-    text-align: center;
-    
+#list-table th, #list-table td {   
+    padding: 14px;  
 }
 
-.list-table th {
-    background-color: var(--primary);
-    color: white;
+#list-table th {
+    border: 1px solid black;
+    background-color: var(--surface);
+    font-size: 1.2rem;
 }
 
-.list-table tr:nth-child(even) {
-    background-color: var(--secondary);
+#list-table td {
+    border: 1px solid black;
 }
+
+#list-table tr:nth-child(even) {
+    background-color: var(--surface);
+}
+
+/*------------------------------------*\
+  #Buttons
+\*------------------------------------*/
 
 /* Edit Buttons */
 .edit-buttons {
@@ -660,9 +634,7 @@ footer {
     padding: 8px 16px;
     border: none;
     border-radius: var(--border-radius);
-    cursor: pointer;
-    background-color: var(--quaternary);
-    color: white;
+    color: var(--surface);
 }
 
 
@@ -671,18 +643,14 @@ footer {
     padding: 8px 16px;
     border: none;
     border-radius: var(--border-radius);
-    cursor: pointer;
-    background-color: lightcoral;
-    color: white;
 }
 
 /*------------------------------------*\
   #Footer
 \*------------------------------------*/
 
-.list-footer td {
-    background: var(--primary);
-    color: #FFF0DD;
+#list-footer td {
+    background: var(--surface);
     font-weight: bold;
     text-align: right;
     padding: 16px;
