@@ -4,16 +4,14 @@
 
 //Import 
 const express = require("express");
-
 //importing the express module
 const session = require('express-session')
 //using fs to dynamically read data from products JSON file
-const fs = require("fs");    
+const fs = require("fs");
 //Express App
 const app = express();
 //View Engine
 app.set("view engine", "ejs");
-
 
 //Middleware for static files
 //Parse JSON data
@@ -29,21 +27,26 @@ app.use(session({
     saveUninitialized: false
 }))
 
-
 app.listen(3000);
 
 //Passing products into EJS (sample products)
-app.get("/", (req, res) => {
+app.get("/", (request, response) => {
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
 
-    res.render("index", { products });
+    response.render("index", { products, title: "Login", error: null});
 });
 
-//Home Page
-app.get("/", (request, response) => {
-    response.render("index", {title: "Home"});
-});
+//login post route to recieve the username and password from form
+app.post('/login', (request, response) => {
+    if  (request.body.username === 'john'&& request.body.password ==='123'){
+        //create session - i will replace with database
+        request.session.user = { id: 1, username: 'john', name: 'John Doe'}
+        response.redirect('/')
+    }else{
+        response.render('login',{error : 'Wrong Credentils'})
+    }
+})
 
 //Catalogue Page
 app.get("/catalogue", (request, response) => {
@@ -52,19 +55,8 @@ app.get("/catalogue", (request, response) => {
 
 //Login Page
 app.get("/login", (request, response) => {
-    response.render("login", {title: "Login", error: null});
+    response.render("login", {title: "Login"});
 });
-
-//login post route to recieve the username and password from form
-app.post('/Login', (req, res) => {
-    if  (req.body.username === 'john'&& req.body.password ==='123'){
-        //create session - i will replace with database
-        req.session.user = { id: 1, username: 'john', name: 'John Doe'}
-        res.redirect('/')
-    }else{
-        res.render('Login',{error : 'Wrong Credentils'})
-    }
-})
 
 //Register Page
 app.get("/register", (request, response) => {
@@ -95,4 +87,3 @@ app.get("/list", (request, response) => {
 app.get("/profile", (request, response) => {
     response.render("profile", {title: "Profile"});
 });
-
