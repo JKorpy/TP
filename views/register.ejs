@@ -10,12 +10,13 @@
 </head>
 <body class="bg-light">
 
+<!-- Registration page layout -->
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
   <div class="card shadow" style="width: 100%; max-width: 400px;">
     <div class="card-body">
 
       <h3 class="mb-3">Register</h3>
-
+<!-- Display error message if registration fails -->
       <% if (error) { %>
         <div class="alert alert-danger"><%= error %></div>
       <% } %>
