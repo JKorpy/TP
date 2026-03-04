@@ -3,6 +3,7 @@
 ############################### */
 
 //Import 
+const { error } = require("console");
 const bcrypt = require("bcrypt");
 const { pool } = require("./db");
 const express = require("express");
@@ -10,6 +11,8 @@ const express = require("express");
 const session = require('express-session')
 //using fs to dynamically read data from products JSON file
 const fs = require("fs");
+//Path
+const path = require("path");
 const { checkLoggedIn, bypassLogin, attachUserToLocals } = require('./middlewares');
 
 //Express App
@@ -49,12 +52,12 @@ app.listen(3000);
 //Login Page
 
 // Route to display the login page, it redirects if the user is already logged in
-app.get('/Login', bypassLogin,(request, response)=> {
-    response.render('Login', {error : null})
+app.get('/login', bypassLogin,(request, response)=> {
+    response.render('login', {error : null})
 })
 
 //login post route to recieve the username and password from form
-app.post('/Login', async (request, response) => {
+app.post('/login', async (request, response) => {
   try {
     const { username, password } = request.body;
 
@@ -65,7 +68,7 @@ app.post('/Login', async (request, response) => {
     );
 
     if (result.rows.length === 0) {
-      return response.render("Login", { error: "Wrong credentials" });
+      return response.render("login", { error: "Wrong credentials" });
     }
     // Get the first user returned from the database query
     const user = result.rows[0];
@@ -74,7 +77,7 @@ app.post('/Login', async (request, response) => {
     const match = await bcrypt.compare(password, user.password_hash);
     //if NOT a match throws error
     if (!match) {
-      return response.render("Login", { error: "Wrong credentials" });
+      return response.render("login", { error: "Wrong credentials" });
     }
 
    // Store the logged in user details in the session so they remain authenticated
@@ -86,7 +89,7 @@ app.post('/Login', async (request, response) => {
     response.redirect("/");
   } catch (err) { // Handle unexpected server errors
     console.error(err);
-    response.render("Login", { error: "Server error" });
+    response.render("login", { error: "Server error" });
   }
 });
 // clear the user session upon logout 
@@ -161,7 +164,70 @@ app.get('/',checkLoggedIn,(request, response) =>{
 
 //Catalogue Page
 app.get("/catalogue", (request, response) => {
-    response.render("catalogue", {title: "Catalogue"});
+    const data = fs.readFileSync("./Products.json");
+    const products = JSON.parse(data);
+
+    response.render("catalogue", {products, title: "Catalogue"});
+});
+
+app.post("/catalogue/add", (request, response) => {
+    const productId = Number(request.body.id);
+    const quantity = 1;
+
+    const productsPath = path.join(__dirname, "Products.json");
+
+    if (!fs.existsSync(productsPath)) {
+        return response.status(500).json({ message: "Products file missing" });
+    }
+
+    // Read products
+    const productsData = fs.readFileSync(productsPath, "utf-8");
+    const products = JSON.parse(productsData);
+
+    const product = products.find(x => x.id === productId);
+
+    if (!product) {
+        return response.status(404).json({ message: "Product not found" });
+    }
+
+    const basketPath = path.join(__dirname, "basket.json");
+
+    let list = [];
+
+    // Read existing basket
+    if (fs.existsSync(basketPath)) {
+        try {
+            const data = fs.readFileSync(basketPath, "utf-8");
+            list = data ? JSON.parse(data) : [];
+        } catch (err) {
+            console.error("Error parsing basket.json:", err);
+            list = []; // fallback to empty array
+        }
+    }
+
+    // 🔎 Check for duplicate
+    const existingItem = list.find(x => x.id === productId);
+
+    if (existingItem) {
+        // Increase quantity
+        existingItem.quantity += 1;
+    } else {
+        // Create new item
+        const item = {
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            quantity: quantity
+        };
+
+        list.push(item);
+    }
+
+    // Save updated basket
+    fs.writeFileSync(basketPath, JSON.stringify(list, null, 2));
+
+    response.json({ message: "Product saved successfully" });
 });
 
 
@@ -183,7 +249,19 @@ app.get("/stores", (request, response) => {
 
 //Shopping List Page
 app.get("/list", (request, response) => {
-    response.render("list", {title: "Shopping List"});
+    const basketPath = path.join(__dirname, "basket.json");
+    let items = [];
+
+    if (fs.existsSync(basketPath)) {
+        const data = fs.readFileSync(basketPath, "utf-8");
+        try {
+            items = JSON.parse(data || "[]");
+        } catch (err) {
+            console.log(error);
+            items = [];
+        }
+    }
+    response.render("list", { items, title: "Shopping List" });
 });
 
 //Profile Page
