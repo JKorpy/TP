@@ -33,7 +33,7 @@
                     <tr>
                         <td class="product-name">(<%= item.name %>) <%= item.description %></td>
                         <td class="product-qty"><%= item.quantity %></td>
-                        <td class="product-price"><%=€(item.price * item.quantity).toFixed(2) %></td>
+                        <td class="product-price">€<%=(item.price * item.quantity).toFixed(2) %></td>
                         <td>
                             <div class="edit-buttons">
                                 <button type="button" class="quantity-btn quantity-decrease">−</button>
