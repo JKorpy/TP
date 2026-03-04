@@ -52,12 +52,12 @@ app.listen(3000);
 //Login Page
 
 // Route to display the login page, it redirects if the user is already logged in
-app.get('/Login', bypassLogin,(request, response)=> {
-    response.render('Login', {error : null})
+app.get('/login', bypassLogin,(request, response)=> {
+    response.render('login', {error : null})
 })
 
 //login post route to recieve the username and password from form
-app.post('/Login', async (request, response) => {
+app.post('/login', async (request, response) => {
   try {
     const { username, password } = request.body;
 
@@ -68,7 +68,7 @@ app.post('/Login', async (request, response) => {
     );
 
     if (result.rows.length === 0) {
-      return response.render("Login", { error: "Wrong credentials" });
+      return response.render("login", { error: "Wrong credentials" });
     }
     // Get the first user returned from the database query
     const user = result.rows[0];
@@ -77,7 +77,7 @@ app.post('/Login', async (request, response) => {
     const match = await bcrypt.compare(password, user.password_hash);
     //if NOT a match throws error
     if (!match) {
-      return response.render("Login", { error: "Wrong credentials" });
+      return response.render("login", { error: "Wrong credentials" });
     }
 
    // Store the logged in user details in the session so they remain authenticated
@@ -89,7 +89,7 @@ app.post('/Login', async (request, response) => {
     response.redirect("/");
   } catch (err) { // Handle unexpected server errors
     console.error(err);
-    response.render("Login", { error: "Server error" });
+    response.render("login", { error: "Server error" });
   }
 });
 // clear the user session upon logout 
