@@ -28,22 +28,26 @@
                 <th>Delete</th>
             </tr>
             <!-- Rows (Name, Quantity, Price, Edit, Delete) -->
-            <% for (let i=0; i < 10; i++) { %>
-                <tr>
-                    <td class="product-name">Product Name</td>
-                    <td class="product-qty">1</td>
-                    <td class="product-price">£0.01</td>
-                    <td>
-                        <div class="edit-buttons">
-                            <button type="button" class="quantity-btn">−</button>
-                            <button type="button" class="quantity-btn">+</button>
-                        </div>
-                    </td>
-                    <td>
-                        <button type="button" class="product-delete-btn">Delete</button>
-                    </td>
-                </tr>
-            <% } %>
+            <% if (items.length > 0) { %>
+                <% items.forEach(item => { %>
+                    <tr>
+                        <td class="product-name">(<%= item.name %>) <%= item.description %></td>
+                        <td class="product-qty"><%= item.quantity %></td>
+                        <td class="product-price"><%=€(item.price * item.quantity).toFixed(2) %></td>
+                        <td>
+                            <div class="edit-buttons">
+                                <button type="button" class="quantity-btn quantity-decrease">−</button>
+                                <button type="button" class="quantity-btn quantity-increase">+</button>
+                            </div>
+                        </td>
+                        <td>
+                            <button type="button" class="product-delete-btn" data-id="<%= item.id %>">Delete</button>
+                        </td>
+                    </tr>
+                <% }) %> 
+            <% } else { %>
+                <p>No items available...</p>
+            <% } %>                
             <!-- Final Row (Total) --> 
             <tr id="list-footer">
                 <td colspan="5">Total: £0.00</td>
