@@ -68,27 +68,29 @@
         </div>
         <!-- Contents -->
         <div id="catalogue-cards">
-            <% for (let i=0; i < 12; i++) { %>
-                <!-- Product Card -->
-                <div class="catalogue-card" data-id="">
-                    <!-- Image -->
-                    <div class="card-image">
-                        <img class="product-image"src="https://picsum.photos/400/300" alt="Product image">
-                    </div>
-                    <!-- Description -->
-                    <div class="card-content">
-                        <!-- Title -->
-                        <h3 class="card-title">
-                            Item this is a very nice product 500ml and 600gb. What would you like?
-                        </h3>
-                        <!-- Price & Button -->
-                        <div class="card-footer">
-                            <p class="card-price">€5.50</p>
-                            <button class="cardBTN">Add to List</button>
+            <% if (products.length > 0) { %>
+                <% products.forEach(product => { %>
+                    <!-- Product Card -->
+                    <div class="catalogue-card">
+                        <!-- Image -->
+                        <div class="card-image">
+                            <img class="product-image"src="https://picsum.photos/400/300" alt="<%= product.name %>"">
+                        </div>
+                        <!-- Description -->
+                        <div class="card-content">
+                            <!-- Title -->
+                            <h3 class="card-title">(<%= product.name %>) <%= product.description %></h3>
+                            <!-- Price & Button -->
+                            <div class="card-footer">
+                                <p class="card-price">€<%= product.price %></p>
+                                <button class="cardBTN" data-id="<%= product.id %>">Add to List</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            <% } %> 
+                <% }) %> 
+            <% } else { %>
+            <p>No products available...</p>
+            <% } %>            
         </div>
         <!-- Pagination -->
         <footer id="catalogue-footer">
@@ -107,13 +109,63 @@
             </div>
         </footer>
     </div>    
+    <div id="catalogue-modal">
+        <div class="modal-header">
+
+        </div>
+        <div class="modal-body" data-id="">
+            <!-- Image -->
+            <div class="modal-image">
+                <img class="product-image"src="https://picsum.photos/400/300" alt="Product image">
+            </div>
+            <!-- Description -->
+            <div class="modal-content">
+                <!-- Title -->
+                <h3 class="modal-title">
+                    Item this is a very nice product 500ml and 600gb. What would you like?
+                </h3>
+                <!-- Price & Button -->
+                <div class="modal-footer">
+                    <p class="modal-price">€5.50</p>
+                    <button class="modal-btn">Add to List</button>
+                    <button id="modal-close-btn">Close</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+
+        </div>
+    </div>
     <%- include("./partials/footer.ejs") %> 
     <script>
+        const modal = document.getElementById("catalogue-modal");
+        const closeModalBTN = document.getElementById("modal-close-btn");
+
         document.querySelectorAll(".product-image").forEach(action => {
             action.addEventListener("click", function() {
-                window.location.href = "https://www.youtube.com/"
+                modal.style.display = "block";
             });
-        });        
+        });       
+        
+        closeModalBTN.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+
+        document.querySelectorAll(".cardBTN").forEach(button => {
+            button.addEventListener("click", async () => {
+                const productId = button.dataset.id;
+
+                await fetch("/catalogue/add", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ id: productId })
+                });
+
+                alert("Product added!");
+            });
+        });
     </script>
 </body>
 </html>
