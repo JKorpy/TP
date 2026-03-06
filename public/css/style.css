@@ -660,26 +660,75 @@ footer {
   #Footer
 \*------------------------------------*/
 
-#catalogue-modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
 }
 
-/* Modal Content/Box */
+/*------------------------------------*\
+  #Modal
+\*------------------------------------*/
 .modal-body {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
+    display: flex;
+    flex-direction: column;    
+    background-color: var(--bg);
+    margin: 10% auto; 
+    border: 1px solid var(--bg);
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.modal-header, .modal-footer {
+    padding: 10px;
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.modal-section {
+    margin: 2.5% 0;
+    padding: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+/*------------------------------------*\
+  #Product Modal
+\*------------------------------------*/
+
+#product-section {
+    text-align: center;
+}
+
+#product-content {
+
+}
+
+#product-img {
+
+}
+
+#product-title {
+
+}
+
+#product-description {
+
+}
+
+#product-footer {
+
+}
+
+#product-price {
+
 }
 
 /*------------------------------------*\
