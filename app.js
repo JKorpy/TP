@@ -49,12 +49,17 @@ app.listen(3000);
 //Login Page
 
 // Route to display the login page, it redirects if the user is already logged in
-app.get('/Login', bypassLogin,(request, response)=> {
-    response.render('Login', {error : null})
+app.get('/login', bypassLogin,(request, response)=> {
+    let error = null;
+
+  if (request.query.error === "session-expired") {
+    error = "Your session has expired. Please log in again.";
+  }
+  response.render('login', {error })
 })
 
 //login post route to recieve the username and password from form
-app.post('/Login', async (request, response) => {
+app.post('/login', async (request, response) => {
   try {
     const { username, password } = request.body;
 
@@ -65,7 +70,7 @@ app.post('/Login', async (request, response) => {
     );
 
     if (result.rows.length === 0) {
-      return response.render("Login", { error: "Wrong credentials" });
+      return response.render("login", { error: "Wrong credentials" });
     }
     // Get the first user returned from the database query
     const user = result.rows[0];
@@ -74,7 +79,7 @@ app.post('/Login', async (request, response) => {
     const match = await bcrypt.compare(password, user.password_hash);
     //if NOT a match throws error
     if (!match) {
-      return response.render("Login", { error: "Wrong credentials" });
+      return response.render("login", { error: "Wrong credentials" });
     }
 
    // Store the logged in user details in the session so they remain authenticated
@@ -86,7 +91,7 @@ app.post('/Login', async (request, response) => {
     response.redirect("/");
   } catch (err) { // Handle unexpected server errors
     console.error(err);
-    response.render("Login", { error: "Server error" });
+    response.render("login", { error: "Server error" });
   }
 });
 // clear the user session upon logout 
@@ -151,13 +156,16 @@ app.post("/register", async (request, response) => {
 
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
-app.get('/',checkLoggedIn,(request, response) =>{
+//app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)
+app.get('/',(request, response) =>{//(delete this line in finshed code)
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
 
 })
 
+//This protects all the pages below from being accessed without a login 
+//app.use(checkLoggedIn);
 
 //Catalogue Page
 app.get("/catalogue", (request, response) => {
