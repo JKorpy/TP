@@ -5,11 +5,12 @@
     <%- include("./partials/header.ejs") %>   
 <body>
     <%- include("./partials/nav.ejs") %>
-    
+    <!-- Catalogue Header -->
     <main>
         <h1>Welcome to Catalogue</h1>
         <p>Browse Products!</p>
     </main>
+    <!-- Catalogue Section -->
     <div id="catalogue-container">
         <!-- Sidebar -->
         <div id="catalogue-sidebar">
@@ -109,26 +110,24 @@
             </div>
         </footer>
     </div>    
+    <!-- Catalogue Modal -->
     <div id="catalogue-modal" class="modal">
+        <!-- Modal Body -->
         <div class="modal-body" data-id="">
+            <!-- Modal Header -->
             <div class="modal-header">
                 <h2>Product</h2>
             </div>
+            <!-- Modal Section (Product)-->
             <div id="product-section" class="modal-section">
                 <!-- Image -->
-                <div>
-                    <img id="product-image"src="https://picsum.photos/400/300" alt="Product image">
-                </div>
+                <div><img id="product-image"src="https://picsum.photos/400/300" alt="Product image"></div>
                 <!-- Description -->
                 <div id="product-content">
                     <!-- Title -->
-                    <h3 id="product-title">
-                        Item this is a very nice product 500ml and 600gb. What would you like?
-                    </h3>
+                    <h3 id="product-title">Item this is a very nice product 500ml and 600gb. What would you like?</h3>
                     <!-- Description -->
-                    <p id="product-description">
-                        What to do?
-                    </p>
+                    <p id="product-description">What to do?</p>
                     <!-- Price & Button -->
                     <div id="product-footer">
                         <p id="product-price">€5.50</p>
@@ -136,7 +135,8 @@
                         <button id="compare-btn">Compare</button>
                     </div>
                 </div>   
-            </div>   
+            </div>  
+            <!-- Modal Footer --> 
             <div class="modal-footer">
                 <button id="modal-close-btn">Close</button>
             </div>             
