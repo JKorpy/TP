@@ -109,31 +109,37 @@
             </div>
         </footer>
     </div>    
-    <div id="catalogue-modal">
-        <div class="modal-header">
-
-        </div>
+    <div id="catalogue-modal" class="modal">
         <div class="modal-body" data-id="">
-            <!-- Image -->
-            <div class="modal-image">
-                <img class="product-image"src="https://picsum.photos/400/300" alt="Product image">
+            <div class="modal-header">
+                <h2>Product</h2>
             </div>
-            <!-- Description -->
-            <div class="modal-content">
-                <!-- Title -->
-                <h3 class="modal-title">
-                    Item this is a very nice product 500ml and 600gb. What would you like?
-                </h3>
-                <!-- Price & Button -->
-                <div class="modal-footer">
-                    <p class="modal-price">€5.50</p>
-                    <button class="modal-btn">Add to List</button>
-                    <button id="modal-close-btn">Close</button>
+            <div id="product-section" class="modal-section">
+                <!-- Image -->
+                <div>
+                    <img id="product-image"src="https://picsum.photos/400/300" alt="Product image">
                 </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-
+                <!-- Description -->
+                <div id="product-content">
+                    <!-- Title -->
+                    <h3 id="product-title">
+                        Item this is a very nice product 500ml and 600gb. What would you like?
+                    </h3>
+                    <!-- Description -->
+                    <p id="product-description">
+                        What to do?
+                    </p>
+                    <!-- Price & Button -->
+                    <div id="product-footer">
+                        <p id="product-price">€5.50</p>
+                        <button class="modal-btn">Add to List</button>
+                        <button id="compare-btn">Compare</button>
+                    </div>
+                </div>   
+            </div>   
+            <div class="modal-footer">
+                <button id="modal-close-btn">Close</button>
+            </div>             
         </div>
     </div>
     <%- include("./partials/footer.ejs") %> 
