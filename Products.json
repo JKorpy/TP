@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "name": "Apple",
     "category": "Fruit&Veg",
     "price": 0.99,
@@ -8,6 +9,25 @@
     "stock": 10
   },
   {
+    "id": 2,
+    "name": "Granny Smith",
+    "category": "Fruit&Veg",
+    "price": 39.99,
+    "description": "Sour green apple, sold individually.",
+    "imageURL": "/images/granny_smith.jpeg",
+    "stock": 5
+  },
+  {
+    "id": 3,
+    "name": "Apple",
+    "category": "Fruit&Veg",
+    "price": 0.99,
+    "description": "Juicy red apple, sold individually.",
+    "imageURL": "/images/red_apple.jpeg",
+    "stock": 10
+  },
+  {
+    "id": 4,
     "name": "Granny Smith",
     "category": "Fruit&Veg",
     "price": 39.99,
@@ -24,6 +44,7 @@
     "stock": 10
   },
   {
+    "id": 5,
     "name": "Granny Smith",
     "category": "Fruit&Veg",
     "price": 39.99,
@@ -32,6 +53,7 @@
     "stock": 5
   },
   {
+    "id": 6,
     "name": "Apple",
     "category": "Fruit&Veg",
     "price": 0.99,
@@ -40,6 +62,7 @@
     "stock": 10
   },
   {
+    "id": 7,
     "name": "Granny Smith",
     "category": "Fruit&Veg",
     "price": 39.99,
@@ -48,6 +71,7 @@
     "stock": 5
   },
   {
+    "id": 8,
     "name": "Apple",
     "category": "Fruit&Veg",
     "price": 0.99,
@@ -56,6 +80,7 @@
     "stock": 10
   },
   {
+    "id": 9,
     "name": "Granny Smith",
     "category": "Fruit&Veg",
     "price": 39.99,
@@ -64,6 +89,7 @@
     "stock": 5
   },
   {
+    "id": 10,
     "name": "Apple",
     "category": "Fruit&Veg",
     "price": 0.99,
@@ -72,6 +98,7 @@
     "stock": 10
   },
   {
+    "id": 11,
     "name": "Granny Smith",
     "category": "Fruit&Veg",
     "price": 39.99,
@@ -80,6 +107,7 @@
     "stock": 5
   },
   {
+    "id": 12,
     "name": "Apple",
     "category": "Fruit&Veg",
     "price": 0.99,
@@ -88,22 +116,7 @@
     "stock": 10
   },
   {
-    "name": "Granny Smith",
-    "category": "Fruit&Veg",
-    "price": 39.99,
-    "description": "Sour green apple, sold individually.",
-    "imageURL": "/images/granny_smith.jpeg",
-    "stock": 5
-  },
-  {
-    "name": "Apple",
-    "category": "Fruit&Veg",
-    "price": 0.99,
-    "description": "Juicy red apple, sold individually.",
-    "imageURL": "/images/red_apple.jpeg",
-    "stock": 10
-  },
-  {
+    "id": 13,
     "name": "Granny Smith",
     "category": "Fruit&Veg",
     "price": 39.99,

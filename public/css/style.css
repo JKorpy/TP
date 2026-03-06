@@ -657,6 +657,81 @@ footer {
 }
 
 /*------------------------------------*\
+  #Footer
+\*------------------------------------*/
+
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
+}
+
+/*------------------------------------*\
+  #Modal
+\*------------------------------------*/
+.modal-body {
+    display: flex;
+    flex-direction: column;    
+    background-color: var(--bg);
+    margin: 10% auto; 
+    border: 1px solid var(--bg);
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.modal-header, .modal-footer {
+    padding: 10px;
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.modal-section {
+    margin: 2.5% 0;
+    padding: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+/*------------------------------------*\
+  #Product Modal
+\*------------------------------------*/
+
+#product-section {
+    text-align: center;
+}
+
+#product-content {
+
+}
+
+#product-img {
+
+}
+
+#product-title {
+
+}
+
+#product-description {
+
+}
+
+#product-footer {
+
+}
+
+#product-price {
+
+}
+
+/*------------------------------------*\
   #Biblography
 \*------------------------------------*/
 /*
@@ -669,6 +744,7 @@ footer {
  * https://www.w3schools.com/css/css_positioning.asp
  * https://www.w3schools.com/css/css_table.asp
  * https://www.w3schools.com/html/html_table_colgroup.asp 
+ * https://www.w3schools.com/howto/howto_css_modals.asp
  *
  * Youtube
  *
