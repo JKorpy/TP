@@ -53,7 +53,12 @@ app.listen(3000);
 
 // Route to display the login page, it redirects if the user is already logged in
 app.get('/login', bypassLogin,(request, response)=> {
-    response.render('login', {error : null})
+    let error = null;
+  
+    if (request.query.error === "session-expired") {
+      error = "Your session has expired. Please log in again.";
+    }
+    response.render('login', {error })
 })
 
 //login post route to recieve the username and password from form
@@ -154,13 +159,16 @@ app.post("/register", async (request, response) => {
 
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
-app.get('/',checkLoggedIn,(request, response) =>{
+//app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)
+app.get('/',(request, response) =>{//(delete this line in finshed code)
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
 
 })
 
+//This protects all the pages below from being accessed without a login 
+//app.use(checkLoggedIn);
 
 //Catalogue Page
 app.get("/catalogue", (request, response) => {
