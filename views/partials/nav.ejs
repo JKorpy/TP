@@ -1,29 +1,33 @@
 <nav> 
-  <a href="/">
-    <img src="/img/home_svg.svg" alt="Home" id="home-icon">
-  </a> |
-    <a href="/stores">
-      <img src="/img/stores_svg.svg" alt="Stores" id="stores-icon">
-    </a> |
-    <a href="/catalogue">
-      <img src="/img/catalogue_svg.svg" alt="Catalogue" id="stores-icon">
-    </a>   |
-    <a href="/list">
-      <img src="/img/myList_svg.svg" alt="List" id="myList-icon">
-    </a>  |
-    <a href="/contact">
-      <img src="/img/contact_svg.svg" alt="Contact" id="contact-icon">
-    </a>  |
-    <a href="/profile">
-      <img src="/img/profile_svg.svg" alt="Profile" id="profile-icon">
-    </a>  |
-    <a href="/login">
-      <img src="/img/profile_svg.svg" alt="Login" id="login-icon">
+  <!-- LINKS -->
+    <a href="/" data-bs-placement="bottom" title="Home" data-bs-custom-class="nav-tooltip">
+      <img src="/img/home_svg.svg" alt="Home" id="home-icon" data-bs-toggle="tooltip" >
     </a>  |
 
+    <a href="/catalogue" data-bs-placement="bottom" title="Catalogue">
+      <img src="/img/catalogue_svg.svg" alt="Catalogue" id="stores-icon" data-bs-toggle="tooltip" >
+    </a>   |
+
+    <a href="/list" data-bs-placement="bottom" title="My List">
+      <img src="/img/myList_svg.svg" alt="List" id="myList-icon" data-bs-toggle="tooltip" >
+    </a>  |
+    
+    <a href="/contact" data-bs-placement="bottom" title="Contact">
+      <img src="/img/contact_svg.svg" alt="Contact" id="contact-icon" data-bs-toggle="tooltip">
+    </a>  |
+    
+    <a href="/profile" data-bs-placement="bottom" title="Profile">
+      <img src="/img/profile_svg.svg" alt="Profile" id="profile-icon" data-bs-toggle="tooltip" >
+    </a>  |
+    
+    <a href="/logout" data-bs-placement="bottom" title="Logout">
+      <img src="/img/logout_svg.svg" alt="Logout" id="Logout-icon" data-bs-toggle="tooltip" >
+    </a>  
+
+
   <!-- SEARCH -->
-  <div class="searchBar">
-    <img src="/img/search_svg.svg" alt="Search" id="search-icon">
+  <div class="searchBar" data-bs-placement="bottom" title="Search">
+    <img src="/img/search_svg.svg" alt="Search" id="search-icon" data-bs-toggle="tooltip">
 
     <form id="search-popup" class="hidden" action="/shop/search" method="GET">
       <input type="text" name="q" id="search-input" placeholder="Search products..." required>
@@ -34,4 +38,5 @@
 
   <!-- JS -->
   <script src="/js/search.js"></script>
+
 </nav>
