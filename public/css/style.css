@@ -534,12 +534,17 @@ footer {
   #Responsive Catalogue
 \*------------------------------------*/
 
+@media (max-width: 1366px) {
+    #catalogue-cards {
+        grid-template-columns: repeat(4, minmax(220px, 1fr));
+    }
+}
+
 /*Medium*/
 @media (max-width: 1280px) {
     #catalogue-cards {
         grid-template-columns: repeat(3, minmax(220px, 1fr));
     }
-
 }
 
 @media (max-width: 768px) {
