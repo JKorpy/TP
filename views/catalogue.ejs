@@ -143,6 +143,7 @@
         </div>
     </div>
     <%- include("./partials/footer.ejs") %> 
+
     <script>
         const modal = document.getElementById("catalogue-modal");
         const closeModalBTN = document.getElementById("modal-close-btn");
@@ -173,5 +174,14 @@
             });
         });
     </script>
+
+    <!-- Floating Dark Mode Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+      <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
+    </button>
+
+    <!--Calling JavaScript for Theme function-->
+    <script src="/js/theme.js"></script>
+
 </body>
 </html>
