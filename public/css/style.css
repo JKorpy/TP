@@ -782,7 +782,29 @@ footer {
 #product-price {
 
 }
-
+/*------------------------------------*\
+ .login
+\*------------------------------------*/
+.logo{
+    width: 40px;
+    height: 10px;
+}
+.login-icon{
+    font-size:28px;
+}
+.register-icon{
+    font-size:18px;
+}
+.form-control{
+    border-radius:10px;
+    padding:8px 10px;
+    font-size:14px;
+}
+.btn-primary{
+    border-radius:10px;
+    padding:8px;
+    font-weight:500;
+}
 /*------------------------------------*\
   #Biblography
 \*------------------------------------*/

@@ -15,10 +15,11 @@ exports.checkLoggedIn = (request, response, next)=> {
     if (request.session.user){
         next()
     }else{
-        response.redirect('/Login')
+        response.redirect("/Login")
     }
 }
 // middleware exports used to check if a user is logged in and if logged in will redirect the page 
+//(registration)
 exports.bypassLogin = (request, response, next) => {
     if (! request.session.user){
         next()
@@ -27,4 +28,34 @@ exports.bypassLogin = (request, response, next) => {
     }
 } 
 
+//for captcha generate
+function generateCaptcha(length = 5) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let result = "";
 
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return result;
+}
+
+exports.createCaptcha = (req, res, next) => {
+    const captcha = generateCaptcha();
+
+    req.session.captcha = captcha;
+    res.locals.captcha = captcha;
+
+    next();
+};
+
+exports.generateCaptchaValue = (length = 5) => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let result = "";
+
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return result;
+};
