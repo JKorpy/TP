@@ -8,7 +8,7 @@
         <h1>Shopping List</h1>
         <p>Discover the best value prices of products from supermarkets across Ireland.</p>
     </main>
- 
+
     <div id="list-container">
         <!-- Table -->
         <table id="list-table">
@@ -59,78 +59,77 @@
         </table>
     </div>
     <%- include("./partials/footer.ejs") %> 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
 
-    const table = document.getElementById("list-table");
-    if (!table) return;
+            const table = document.getElementById("list-table");
+            if (!table) return;
 
-    // --- Event Delegation on tbody ---
-    const tbody = table.querySelector("tbody");
-    tbody.addEventListener("click", async (e) => {
+            // --- Event Delegation on tbody ---
+            const tbody = table.querySelector("tbody");
+            tbody.addEventListener("click", async (e) => {
 
-        const row = e.target.closest("tr");
-        if (!row || !row.dataset.id) return; // skip total or "no items" rows
+                const row = e.target.closest("tr");
+                if (!row || !row.dataset.id) return; // skip total or "no items" rows
 
-        const id = row.dataset.id;
-        const qtyEl = row.querySelector(".product-qty");
-        const priceEl = row.querySelector(".product-price");
+                const id = row.dataset.id;
+                const qtyEl = row.querySelector(".product-qty");
+                const priceEl = row.querySelector(".product-price");
 
-        // --- Increase Quantity ---
-        if (e.target.classList.contains("quantity-increase")) {
-            try {
-                const res = await fetch(`/api/items/${id}/increase`, { method: "PUT" });
-                const item = await res.json();
-                qtyEl.textContent = item.quantity;
-                priceEl.textContent = `€${(item.price * item.quantity).toFixed(2)}`;
-                updateTotal();
-            } catch (err) {
-                console.error("Failed to increase quantity:", err);
+                // --- Increase Quantity ---
+                if (e.target.classList.contains("quantity-increase")) {
+                    try {
+                        const res = await fetch(`/api/items/${id}/increase`, { method: "PUT" });
+                        const item = await res.json();
+                        qtyEl.textContent = item.quantity;
+                        priceEl.textContent = `€${(item.price * item.quantity).toFixed(2)}`;
+                        updateTotal();
+                    } catch (err) {
+                        console.error("Failed to increase quantity:", err);
+                    }
+                }
+
+                // --- Decrease Quantity ---
+                if (e.target.classList.contains("quantity-decrease")) {
+                    try {
+                        const res = await fetch(`/api/items/${id}/decrease`, { method: "PUT" });
+                        const item = await res.json();
+                        qtyEl.textContent = item.quantity;
+                        priceEl.textContent = `€${(item.price * item.quantity).toFixed(2)}`;
+                        updateTotal();
+                    } catch (err) {
+                        console.error("Failed to decrease quantity:", err);
+                    }
+                }
+
+                // --- Delete Item ---
+                if (e.target.classList.contains("product-delete-btn")) {
+                    try {
+                        await fetch(`/api/items/${id}`, { method: "DELETE" });
+                        row.style.opacity = "0";
+                        setTimeout(() => row.remove(), 300);
+                        updateTotal();
+                    } catch (err) {
+                        console.error("Failed to delete item:", err);
+                    }
+                }
+
+            });
+
+            // --- Live Total Function ---
+            function updateTotal() {
+                let total = 0;
+                tbody.querySelectorAll("tr[data-id]").forEach(row => {
+                    const priceText = row.querySelector(".product-price").textContent;
+                    total += parseFloat(priceText.replace("€", ""));
+                });
+                const footer = document.getElementById("list-footer");
+                if (footer) footer.querySelector("td").textContent = `Total: €${total.toFixed(2)}`;
             }
-        }
 
-        // --- Decrease Quantity ---
-        if (e.target.classList.contains("quantity-decrease")) {
-            try {
-                const res = await fetch(`/api/items/${id}/decrease`, { method: "PUT" });
-                const item = await res.json();
-                qtyEl.textContent = item.quantity;
-                priceEl.textContent = `€${(item.price * item.quantity).toFixed(2)}`;
-                updateTotal();
-            } catch (err) {
-                console.error("Failed to decrease quantity:", err);
-            }
-        }
-
-        // --- Delete Item ---
-        if (e.target.classList.contains("product-delete-btn")) {
-            try {
-                await fetch(`/api/items/${id}`, { method: "DELETE" });
-                row.style.opacity = "0";
-                setTimeout(() => row.remove(), 300);
-                updateTotal();
-            } catch (err) {
-                console.error("Failed to delete item:", err);
-            }
-        }
-
-    });
-
-    // --- Live Total Function ---
-    function updateTotal() {
-        let total = 0;
-        tbody.querySelectorAll("tr[data-id]").forEach(row => {
-            const priceText = row.querySelector(".product-price").textContent;
-            total += parseFloat(priceText.replace("€", ""));
+            // --- Initialize Total on Page Load ---
+            updateTotal();
         });
-        const footer = document.getElementById("list-footer");
-        if (footer) footer.querySelector("td").textContent = `Total: €${total.toFixed(2)}`;
-    }
-
-    // --- Initialize Total on Page Load ---
-    updateTotal();
-
-});
-</script>
+    </script>
 </body>
 </html>
