@@ -6,15 +6,59 @@
 <body>
   <%- include("./partials/nav.ejs") %>
 
-  <%- include("./partials/footer.ejs") %>
+    <!--Main Content-->
+    <div id="profile-container">
 
+        <!-- USER CARD -->
+        <div class="profile-card">
+
+            <div class="profile-avatar">
+                <img src="/img/profile_svg.svg" alt="User Avatar">
+            </div>
+
+            <div class="profile-info">
+                <h2>Username</h2>
+                <p>Email</p>
+                
+            </div>
+
+        </div>
+
+
+        <!-- PROFILE ACTIONS -->
+        <div class="profile-actions">
+
+            <a href="/catalogue" class="btn">
+                Browse Catalogue
+            </a>
+
+            <a href="/list" class="btn">
+                My Shopping List
+            </a>
+
+            <a href="/contact" class="btn">
+                Contact Support
+            </a>
+
+            <a href="/logout" class="btn">
+                Logout
+            </a>
+
+        </div>
+
+    </div>
+
+
+  <%- include("./partials/footer.ejs") %>
   
     <!-- Floating Dark Mode Toggle -->
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
-    <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22">
+      <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
     </button>
 
-  <script src="/js/theme.js"></script>
+    <!--Calling JavaScript for Theme function-->
+    <script src="/js/theme.js"></script>
+    
 </body>
 
 </html>

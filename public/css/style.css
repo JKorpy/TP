@@ -15,6 +15,8 @@
  * Footer...............Footer of the catalogue
  * Responsive...........Media Queries
  *
+ * PROFILE
+ *
  * LIST
  * Table................Table of products
  * Buttons..............Interactive buttons within the table
@@ -31,7 +33,7 @@
   #SETTINGS
 \*------------------------------------*/
 
-/* RESET */
+/* RESET */ 
 * {
     margin: 0;
     padding: 0;
@@ -42,25 +44,25 @@
 /* THEME VARIABLES */
 :root {
   /* Light Mode Overrides */
-  --bg: #F4F7FA;
+  --bg: #d1bbab;
   --surface: #FFFFFF;
   --text-primary: #1E1E1E;
-  --text-secondary: #666;
-  --accent: #3B82F6;
+  --text-secondary: #E2A16F;
+  --accent: #d1bbab;
   --radius: 18px;
-  --shadow: 0 8px 25px rgba(0,0,0,0.08);
+  --shadow: 0 8px 25px rgb(129, 129, 129);
   --border-radius: 8px;
 }
 
 
 /* Dark Mode */
 body.dark {
-  --bg: #121212;
+  --bg: #3b342e;
   --surface: #1E1E1E;
   --text-primary: #F1F1F1;
-  --text-secondary: #B0B0B0;
-  --accent: #60A5FA;
-  --shadow: 0 8px 25px rgba(0,0,0,0.35);
+  --text-secondary: #E2A16F;
+  --accent: #d1bbab;
+  --shadow: 0 8px 25px rgba(0,0,0,10);
 }
 
 /*------------------------------------*\
@@ -86,14 +88,14 @@ body {
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    border: none;
+    border: double, var(--text-secondary);
     background: var(--surface);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     box-shadow: var(--shadow);
-    transition: all 0.3s ease;
+    transition: background 0.3s ease, color 0.3s ease;
     z-index: 1000; /* Make sure icon floats above content */
 }
 
@@ -143,6 +145,7 @@ nav {
     gap: 35px;
     box-shadow: var(--shadow);
     border-radius: 50px;
+    border: double, var(--text-secondary);
     width: fit-content;
     margin: 30px auto;
     transition: background 0.3s ease;
@@ -152,6 +155,7 @@ nav a {
     color: var(--text-primary);
     transition: all 0.25s ease;
     opacity: 0.8;
+    cursor: pointer;
 }
 
 nav a:hover {
@@ -189,9 +193,10 @@ nav a:hover {
   width: 100%;
   padding: 10px 14px;
   border-radius: 25px;
-  border: 1px solid #ccc;
+  border: double, var(--text-secondary);
   margin-bottom: 10px;
   outline: none;
+  background-color: var(--surface);
 }
 
 #search-btn {
@@ -287,21 +292,6 @@ footer {
     color: var(--text-secondary);
 }
 
-/* DARK MODE TOGGLE BUTTON */
-.theme-toggle {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 55px;
-    height: 55px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    box-shadow: var(--shadow);
-}
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
@@ -385,9 +375,11 @@ footer {
 .filter-group input, .filter-group select {
     padding: 8px;
     border-radius: var(--radius);
-    border: none;
+    border: double, var(--text-secondary);
+    background-color: var(--surface);
     outline: none;
     font-size: 14px;
+    color: var(--text-primary);
 }
 
 /* Checkbox Group */
@@ -584,6 +576,55 @@ footer {
         font-size: 20px;
     }        
 }
+
+
+
+/*------------------------------------*\
+  #PROFILE
+\*------------------------------------*/
+
+#profile-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.profile-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.profile-avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-actions {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+
 
 /*------------------------------------*\
   #LIST

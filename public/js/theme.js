@@ -1,20 +1,20 @@
 const toggleBtn = document.getElementById("themeToggle");
 const themeIcon = document.getElementById("themeIcon");
 
-// Load saved theme on page load
-if (localStorage.getItem("theme") === "light") {     //light
-  document.body.classList.add("light");      //light
-  themeIcon.src = "/img/darkMode_svg.svg";     //dark mode icon
+//Load saved theme
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  themeIcon.src = "/img/lightMode_svg.svg";
 }
 
 toggleBtn.addEventListener("click", () => {
-  document.body.classList.toggle("light");       //light
+  document.body.classList.toggle("dark");
 
-  if (document.body.classList.contains("light")) {       //light
-    localStorage.setItem("theme", "light");      //light
-    themeIcon.src = "/img/darkMode_svg.svg";   //dark mode icon
+  if (document.body.classList.contains("dark")) {
+    localStorage.setItem("theme", "dark");
+    themeIcon.src = "/img/lightMode_svg.svg";
   } else {
-    localStorage.setItem("theme", "dark");     //dark
-    themeIcon.src = "/img/lightMode_svg.svg";    //light mode icon
+    localStorage.setItem("theme", "light");
+    themeIcon.src = "/img/darkMode_svg.svg";
   }
 });
