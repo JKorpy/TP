@@ -13,9 +13,11 @@ const session = require('express-session')
 const fs = require("fs");
 //Path
 const path = require("path");
-const { checkLoggedIn, bypassLogin, attachUserToLocals } = require('./middlewares');
+
+const { checkLoggedIn, bypassLogin, attachUserToLocals, createCaptcha, generateCaptchaValue} = require('./middlewares');
 //JSON path
 const basketPath = path.join(__dirname, "basket.json");
+
 
 //Express App
 const app = express();
@@ -41,7 +43,7 @@ app.use(session({
     saveUninitialized: false,
     name: 'manfra.io',
     cookie: {
-        maxAge: 10000
+        maxAge: 1000 * 60 * 10
     }
 }))
 
@@ -54,19 +56,31 @@ app.listen(3000);
 //Login Page
 
 // Route to display the login page, it redirects if the user is already logged in
-app.get('/login', bypassLogin,(request, response)=> {
+app.get('/login', bypassLogin, createCaptcha, (request, response) => {
     let error = null;
-  
+
     if (request.query.error === "session-expired") {
-      error = "Your session has expired. Please log in again.";
+        error = "Your session has expired. Please log in again.";
     }
-    response.render('login', {error })
-})
+
+    response.render('login', { error, captcha: response.locals.captcha });
+});
 
 //login post route to recieve the username and password from form
 app.post('/login', async (request, response) => {
   try {
-    const { username, password } = request.body;
+    const { username, password, captchaInput } = request.body;
+
+    // Check captcha first
+    if (!captchaInput || captchaInput.toUpperCase() !== request.session.captcha) {
+      const captcha = generateCaptchaValue();
+      request.session.captcha = captcha;
+
+      return response.render("login", {
+        error: "Incorrect captcha",
+        captcha
+      });
+    }
 
     // Check if a user with the provided username exists in the database
     const result = await pool.query(
@@ -75,28 +89,52 @@ app.post('/login', async (request, response) => {
     );
 
     if (result.rows.length === 0) {
-      return response.render("login", { error: "Wrong credentials" });
+      const captcha = generateCaptchaValue();
+      request.session.captcha = captcha;
+
+      return response.render("login", {
+        error: "Wrong credentials",
+        captcha
+      });
     }
+
     // Get the first user returned from the database query
     const user = result.rows[0];
 
     // Compare the entered password with the hashed password stored in the database
     const match = await bcrypt.compare(password, user.password_hash);
-    //if NOT a match throws error
+
     if (!match) {
-      return response.render("login", { error: "Wrong credentials" });
+      const captcha = generateCaptchaValue();
+      request.session.captcha = captcha;
+
+      return response.render("login", {
+        error: "Wrong credentials",
+        captcha
+      });
     }
 
-   // Store the logged in user details in the session so they remain authenticated
+    // Store the logged in user details in the session so they remain authenticated
     request.session.user = {
       id: user.id,
       username: user.username
     };
+
+    // Clear captcha after successful login
+    request.session.captcha = null;
+
     // Redirect to homepage after successful login
     response.redirect("/");
-  } catch (err) { // Handle unexpected server errors
+  } catch (err) {
     console.error(err);
-    response.render("login", { error: "Server error" });
+
+    const captcha = generateCaptchaValue();
+    request.session.captcha = captcha;
+
+    response.render("login", {
+      error: "Server error",
+      captcha
+    });
   }
 });
 // clear the user session upon logout 
@@ -108,14 +146,28 @@ app.get('/logout', (request, response) => {
 )
 
 //Register Page
-app.get("/register", (request, response) => {
-  response.render("register", { error: null });
+app.get("/register", bypassLogin, createCaptcha, (request, response) => {
+  response.render("register", {
+    error: null,
+    captcha: response.locals.captcha
+  });
 });
 
 //Pulls in username and password to be validated
 app.post("/register", async (request, response) => {
   try {
-    const { username, password } = request.body;
+    const { username, password, captchaInput } = request.body;
+if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captcha) {
+
+  const captcha = generateCaptchaValue();
+  request.session.captcha = captcha;
+
+  return response.render("register", {
+    error: "Incorrect captcha",
+    captcha
+  });
+}
+
 //If username and password are empty shows "Missing Fields"
     if (!username || !password) {
       return response.status(400).send("Missing fields");
@@ -161,8 +213,8 @@ app.post("/register", async (request, response) => {
 
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
-//app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)
-app.get('/',checkLoggedIn, (request, response) =>{//(delete this line in finshed code)
+//app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)also for LOGOUT
+app.get('/', (request, response) =>{//(delete this line in finshed code)
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
@@ -170,7 +222,7 @@ app.get('/',checkLoggedIn, (request, response) =>{//(delete this line in finshed
 })
 
 //This protects all the pages below from being accessed without a login 
-//app.use(checkLoggedIn);
+app.use(checkLoggedIn);
 
 //Catalogue Page
 app.get("/catalogue", (request, response) => {
