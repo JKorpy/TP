@@ -4,13 +4,13 @@
     "name": "Apple",
     "description": "Juicy red apple, sold individually.",
     "price": 0.99,
-    "quantity": 3
+    "quantity": 1
   },
   {
     "id": 2,
     "name": "Granny Smith",
     "description": "Sour green apple, sold individually.",
     "price": 39.99,
-    "quantity": 2
+    "quantity": 1
   }
 ]

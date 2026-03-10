@@ -14,6 +14,8 @@ const fs = require("fs");
 //Path
 const path = require("path");
 const { checkLoggedIn, bypassLogin, attachUserToLocals } = require('./middlewares');
+//JSON path
+const basketPath = path.join(__dirname, "basket.json");
 
 //Express App
 const app = express();
@@ -160,7 +162,7 @@ app.post("/register", async (request, response) => {
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
 //app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)
-app.get('/',(request, response) =>{//(delete this line in finshed code)
+app.get('/',checkLoggedIn, (request, response) =>{//(delete this line in finshed code)
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
@@ -179,63 +181,63 @@ app.get("/catalogue", (request, response) => {
 });
 
 app.post("/catalogue/add", (request, response) => {
-    const productId = Number(request.body.id);
-    const quantity = 1;
+  const productId = Number(request.body.id);
+  const quantity = 1;
 
-    const productsPath = path.join(__dirname, "Products.json");
+  const productsPath = path.join(__dirname, "Products.json");
 
-    if (!fs.existsSync(productsPath)) {
-        return response.status(500).json({ message: "Products file missing" });
-    }
+  if (!fs.existsSync(productsPath)) {
+      return response.status(500).json({ message: "Products file missing" });
+  }
 
-    // Read products
-    const productsData = fs.readFileSync(productsPath, "utf-8");
-    const products = JSON.parse(productsData);
+  // Read products
+  const productsData = fs.readFileSync(productsPath, "utf-8");
+  const products = JSON.parse(productsData);
 
-    const product = products.find(x => x.id === productId);
+  const product = products.find(x => x.id === productId);
 
-    if (!product) {
-        return response.status(404).json({ message: "Product not found" });
-    }
+  if (!product) {
+      return response.status(404).json({ message: "Product not found" });
+  }
 
-    const basketPath = path.join(__dirname, "basket.json");
+  const basketPath = path.join(__dirname, "basket.json");
 
-    let list = [];
+  let list = [];
 
-    // Read existing basket
-    if (fs.existsSync(basketPath)) {
-        try {
-            const data = fs.readFileSync(basketPath, "utf-8");
-            list = data ? JSON.parse(data) : [];
-        } catch (err) {
-            console.error("Error parsing basket.json:", err);
-            list = []; // fallback to empty array
-        }
-    }
+  // Read existing basket
+  if (fs.existsSync(basketPath)) {
+      try {
+          const data = fs.readFileSync(basketPath, "utf-8");
+          list = data ? JSON.parse(data) : [];
+      } catch (err) {
+          console.error("Error parsing basket.json:", err);
+          list = []; // fallback to empty array
+      }
+  }
 
-    // 🔎 Check for duplicate
-    const existingItem = list.find(x => x.id === productId);
+  // 🔎 Check for duplicate
+  const existingItem = list.find(x => x.id === productId);
 
-    if (existingItem) {
-        // Increase quantity
-        existingItem.quantity += 1;
-    } else {
-        // Create new item
-        const item = {
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            quantity: quantity
-        };
+  if (existingItem) {
+      // Increase quantity
+      existingItem.quantity += 1;
+  } else {
+      // Create new item
+      const item = {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          quantity: quantity
+      };
 
-        list.push(item);
-    }
+      list.push(item);
+  }
 
-    // Save updated basket
-    fs.writeFileSync(basketPath, JSON.stringify(list, null, 2));
+  // Save updated basket
+  fs.writeFileSync(basketPath, JSON.stringify(list, null, 2));
 
-    response.json({ message: "Product saved successfully" });
+  response.json({ message: "Product saved successfully" });
 });
 
 
@@ -257,22 +259,81 @@ app.get("/stores", (request, response) => {
 
 //Shopping List Page
 app.get("/list", (request, response) => {
-    const basketPath = path.join(__dirname, "basket.json");
-    let items = [];
+  const items = readBasket();
+  response.render("list", { items, title: "Shopping List" });
+});
 
-    if (fs.existsSync(basketPath)) {
-        const data = fs.readFileSync(basketPath, "utf-8");
-        try {
-            items = JSON.parse(data || "[]");
-        } catch (err) {
-            console.log(error);
-            items = [];
-        }
-    }
-    response.render("list", { items, title: "Shopping List" });
+app.put("/api/items/:id/increase", (request, response) => {
+  const result = findItemById(request, response);
+  if(!result) return
+
+  const {item, itemList } = result;
+  item.quantity++;
+  writeBasket(itemList);
+  response.json(item);
+});
+
+app.put("/api/items/:id/decrease", (request, response) => {
+  const result = findItemById(request, response);
+  if(!result) return
+
+  // Prevent quantity from going below 1
+  const {item, itemList } = result;
+  if (item.quantity > 1) {
+    item.quantity--;
+    writeBasket(itemList);
+  }
+
+  response.json(item);
+});
+
+app.delete("/api/items/:id", (request, response) => {
+  const itemList = readBasket();
+  const id = parseInt(request.params.id, 10);
+  // Filter out the deleted item
+  const updatedList = itemList.filter(obj => obj.id !== id);
+
+  writeBasket(updatedList);
+  response.json({ success: true });
 });
 
 //Profile Page
 app.get("/profile", (request, response) => {
     response.render("profile", {title: "Profile"});
 });
+
+
+//Support Functions
+
+function findItemById(request, response) {
+  const itemList = readBasket();
+  const itemId = parseInt(req.params.id, 10);
+  const item = itemList.find(obj => obj.id === itemId);
+
+  if(!item) {
+    return response.status(404).json({error: "Item not found"});
+  }
+
+  return {item, itemList};
+} 
+
+function readBasket() {
+  if(!fs.existsSync(basketPath)) return [];
+  try {
+    const data = fs.readFileSync(basketPath, "utf-8");
+    return JSON.parse(data || "[]");
+  } 
+  catch (err) {
+    console.error("Error reading basket.json", err);
+    return [];
+  }
+}
+
+function writeBasket(items) {
+  try {
+    fs.writeFileSync(basketPath, JSON.stringify(items, null, 2));
+  } 
+  catch(err) {
+    console.error("Error writing basket.json", err);
+  }
+}
