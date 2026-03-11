@@ -155,34 +155,47 @@
     <%- include("./partials/footer.ejs") %> 
 
     <script>
-        const modal = document.getElementById("catalogue-modal");
-        const closeModalBTN = document.getElementById("modal-close-btn");
-
-        document.querySelectorAll(".product-image").forEach(action => {
-            action.addEventListener("click", function() {
-                modal.style.display = "block";
+        //Wait for DOM to load
+        document.addEventListener("DOMContentLoaded", () => {
+            //Initialisation
+            const modal = document.getElementById("catalogue-modal");
+            const closeModalBTN = document.getElementById("modal-close-btn");
+            //Event delagation
+            document.addEventListener("click", (e) => {
+                //Open the product modal
+                if(e.target.classList.contains("product-image")) {
+                    modal.style.display = "block";
+                }
+                //Close the product modal
+                if(e.target === closeModalBTN) {
+                    modal.style.display.none;
+                }
+                //Add product to the list
+                if(e.target.classList.contains("cardBTN")) {
+                    const productId = e.target.dataset.id;
+                    //console.log("Clicked add button:", productId);
+                    addProductToList(productId);
+                }
             });
-        });       
-        
-        closeModalBTN.addEventListener("click", () => {
-            modal.style.display = "none";
         });
 
-        document.querySelectorAll(".cardBTN").forEach(button => {
-            button.addEventListener("click", async () => {
-                const productId = button.dataset.id;
-
-                await fetch("/catalogue/add", {
+        async function addProductToList(productId) {
+            //Attempt to create a post request
+            //If successful, create alert otherwise produce an error
+            try {
+                const response = await fetch("/catalogue/add", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({ id: productId })
                 });
-
                 alert("Product added!");
-            });
-        });
+            }
+            catch (err) {
+                console.log("Add product failed: ", err);
+            }
+        }
     </script>
 
     <!-- Floating Dark Mode Toggle -->
@@ -190,7 +203,7 @@
       <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
     </button>
 
-    <!--Calling JavaScript for Theme function-->
+    <!--Calling JavaScript for Theme function 😺-->
     <script src="/js/theme.js"></script>
 
 </body>
