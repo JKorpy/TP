@@ -58,7 +58,6 @@ app.listen(3000);
 // Route to display the login page, it redirects if the user is already logged in
 app.get('/login', bypassLogin, createCaptcha, (request, response) => {
     let error = null;
-
     if (request.query.error === "session-expired") {
         error = "Your session has expired. Please log in again.";
     }
@@ -213,8 +212,8 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
-//app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)also for LOGOUT
-app.get('/', (request, response) =>{//(delete this line in finshed code)
+//app.get('/',checkLoggedIn,(request, response) =>{ //(use this in finished code!!!!!!!!!!)also for LOGOUT
+app.get('/', (request, response) =>{
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
@@ -222,9 +221,9 @@ app.get('/', (request, response) =>{//(delete this line in finshed code)
 })
 
 //This protects all the pages below from being accessed without a login 
-app.use(checkLoggedIn);
+//app.use(checkLoggedIn);
 
-//Catalogue Page
+//Catalogue Page 😺
 app.get("/catalogue", (request, response) => {
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
@@ -233,6 +232,7 @@ app.get("/catalogue", (request, response) => {
 });
 
 app.post("/catalogue/add", (request, response) => {
+  //Initialisation
   const productId = Number(request.body.id);
   const quantity = 1;
 
@@ -242,10 +242,8 @@ app.post("/catalogue/add", (request, response) => {
       return response.status(500).json({ message: "Products file missing" });
   }
 
-  // Read products
   const productsData = fs.readFileSync(productsPath, "utf-8");
   const products = JSON.parse(productsData);
-
   const product = products.find(x => x.id === productId);
 
   if (!product) {
@@ -256,25 +254,21 @@ app.post("/catalogue/add", (request, response) => {
 
   let list = [];
 
-  // Read existing basket
   if (fs.existsSync(basketPath)) {
       try {
           const data = fs.readFileSync(basketPath, "utf-8");
           list = data ? JSON.parse(data) : [];
       } catch (err) {
           console.error("Error parsing basket.json:", err);
-          list = []; // fallback to empty array
+          list = []; 
       }
   }
-
-  // 🔎 Check for duplicate
+  
   const existingItem = list.find(x => x.id === productId);
 
   if (existingItem) {
-      // Increase quantity
       existingItem.quantity += 1;
   } else {
-      // Create new item
       const item = {
           id: product.id,
           name: product.name,
@@ -286,7 +280,6 @@ app.post("/catalogue/add", (request, response) => {
       list.push(item);
   }
 
-  // Save updated basket
   fs.writeFileSync(basketPath, JSON.stringify(list, null, 2));
 
   response.json({ message: "Product saved successfully" });
@@ -315,7 +308,7 @@ app.get("/list", (request, response) => {
   response.render("list", { items, title: "Shopping List" });
 });
 
-app.put("/api/items/:id/increase", (request, response) => {
+app.put("/list/:id/increase", (request, response) => {
   const result = findItemById(request, response);
   if(!result) return
 
@@ -325,7 +318,7 @@ app.put("/api/items/:id/increase", (request, response) => {
   response.json(item);
 });
 
-app.put("/api/items/:id/decrease", (request, response) => {
+app.put("/list/:id/decrease", (request, response) => {
   const result = findItemById(request, response);
   if(!result) return
 
@@ -339,7 +332,7 @@ app.put("/api/items/:id/decrease", (request, response) => {
   response.json(item);
 });
 
-app.delete("/api/items/:id", (request, response) => {
+app.delete("/list/:id/", (request, response) => {
   const itemList = readBasket();
   const id = parseInt(request.params.id, 10);
   // Filter out the deleted item
@@ -355,11 +348,10 @@ app.get("/profile", (request, response) => {
 });
 
 
-//Support Functions
-
+//Additional Functions
 function findItemById(request, response) {
   const itemList = readBasket();
-  const itemId = parseInt(req.params.id, 10);
+  const itemId = parseInt(request.params.id, 10);
   const item = itemList.find(obj => obj.id === itemId);
 
   if(!item) {
@@ -369,8 +361,8 @@ function findItemById(request, response) {
   return {item, itemList};
 } 
 
-function readBasket() {
-  if(!fs.existsSync(basketPath)) return [];
+function readJSON(filePath) {
+  if(!fs.existsSync(filePath)) return [];
   try {
     const data = fs.readFileSync(basketPath, "utf-8");
     return JSON.parse(data || "[]");

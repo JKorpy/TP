@@ -36,7 +36,7 @@
                         <tr data-id="<%= item.id %>">
                             <td class="product-name">(<%= item.name %>) <%= item.description %></td>
                             <td class="product-qty"><%= item.quantity %></td>
-                            <td class="product-price">€<%=(item.price * item.quantity).toFixed(2) %></td>
+                            <td class="product-price" data-price="<%=(item.price * item.quantity).toFixed(2) %>">€<%=(item.price * item.quantity).toFixed(2) %></td>
                             <td>
                                 <div class="edit-buttons">
                                     <button type="button" class="quantity-btn quantity-decrease">−</button>
@@ -60,54 +60,43 @@
     </div>
     <%- include("./partials/footer.ejs") %> 
     <script>
+        // Wait for the DOM to be loaded before executing this script
         document.addEventListener("DOMContentLoaded", () => {
 
             const table = document.getElementById("list-table");
-            if (!table) return;
 
-            // --- Event Delegation on tbody ---
+            // Event Delegation (Listens to the child element that was clicked)
             const tbody = table.querySelector("tbody");
             tbody.addEventListener("click", async (e) => {
 
-                const row = e.target.closest("tr");
-                if (!row || !row.dataset.id) return; // skip total or "no items" rows
+                // Find the closest row to the clicked element
+                const row = e.target.closest("tr");;
+                console.log(row);
+                if (!row || !row.dataset.id) return; 
 
+                // Collect data
                 const id = row.dataset.id;
-                const qtyEl = row.querySelector(".product-qty");
-                const priceEl = row.querySelector(".product-price");
+                const quantityElement = row.querySelector(".product-qty");
+                const priceElement = row.querySelector(".product-price");
 
-                // --- Increase Quantity ---
+                // Increase Quantity
                 if (e.target.classList.contains("quantity-increase")) {
-                    try {
-                        const res = await fetch(`/api/items/${id}/increase`, { method: "PUT" });
-                        const item = await res.json();
-                        qtyEl.textContent = item.quantity;
-                        priceEl.textContent = `€${(item.price * item.quantity).toFixed(2)}`;
-                        updateTotal();
-                    } catch (err) {
-                        console.error("Failed to increase quantity:", err);
-                    }
-                }
+                    updateQuantity(`/list/${id}/increase`, quantityElement, priceElement);
+                } 
 
-                // --- Decrease Quantity ---
+                // Decrease Quantity
                 if (e.target.classList.contains("quantity-decrease")) {
-                    try {
-                        const res = await fetch(`/api/items/${id}/decrease`, { method: "PUT" });
-                        const item = await res.json();
-                        qtyEl.textContent = item.quantity;
-                        priceEl.textContent = `€${(item.price * item.quantity).toFixed(2)}`;
-                        updateTotal();
-                    } catch (err) {
-                        console.error("Failed to decrease quantity:", err);
-                    }
+                    updateQuantity(`/list/${id}/decrease`, quantityElement, priceElement);
                 }
 
-                // --- Delete Item ---
+                // Delete Item
                 if (e.target.classList.contains("product-delete-btn")) {
                     try {
-                        await fetch(`/api/items/${id}`, { method: "DELETE" });
-                        row.style.opacity = "0";
-                        setTimeout(() => row.remove(), 300);
+                        // Create a delete request
+                        await fetch(`/list/${id}`, { method: "DELETE" });
+                        //Delete current row from DOM
+                        row.remove();
+                        //Update the total price
                         updateTotal();
                     } catch (err) {
                         console.error("Failed to delete item:", err);
@@ -116,18 +105,40 @@
 
             });
 
-            // --- Live Total Function ---
+            // Update Total Price
             function updateTotal() {
                 let total = 0;
-                tbody.querySelectorAll("tr[data-id]").forEach(row => {
-                    const priceText = row.querySelector(".product-price").textContent;
-                    total += parseFloat(priceText.replace("€", ""));
+                //Accessing the product element's data price and add it to total
+                tbody.querySelectorAll(".product-price").forEach(priceElement => {
+                    total += Number(priceElement.dataset.price);
                 });
-                const footer = document.getElementById("list-footer");
-                if (footer) footer.querySelector("td").textContent = `Total: €${total.toFixed(2)}`;
+                
+                // :cat, (U+1F408), 😺 cat.
+                document.querySelector("#list-footer td").textContent = `Total: €${total.toFixed(2)}`;
             }
 
-            // --- Initialize Total on Page Load ---
+            async function updateQuantity(url, quantityElement, priceElement) {
+                try {
+                    //Put Reqeust
+                    const response = await fetch(url, { method: "PUT" });
+                    //Server response in JSON format
+                    const item = await response.json();
+                    //Initialise a price
+                    const newPrice = item.price * item.quantity;
+                    //Update Quantity
+                    quantityElement.textContent = item.quantity;
+                    //Update Price
+                    priceElement.dataset.price = newPrice;
+                    priceElement.textContent = `€${newPrice.toFixed(2)}`;
+                    //Recalculate Total
+                    updateTotal();
+                }
+                catch (err) {
+                    console.error("Failed to update quantity:", err);
+                }
+            }
+
+            // Execute on page load
             updateTotal();
         });
     </script>
