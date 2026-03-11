@@ -13,7 +13,12 @@ const session = require('express-session')
 const fs = require("fs");
 //Path
 const path = require("path");
+
 const { checkLoggedIn, bypassLogin, attachUserToLocals, createCaptcha, generateCaptchaValue} = require('./middlewares');
+//JSON path
+const basketPath = path.join(__dirname, "basket.json");
+const productPath = path.join(__dirname, "Products.json");
+
 
 //Express App
 const app = express();
@@ -54,7 +59,6 @@ app.listen(3000);
 // Route to display the login page, it redirects if the user is already logged in
 app.get('/login', bypassLogin, createCaptcha, (request, response) => {
     let error = null;
-
     if (request.query.error === "session-expired") {
         error = "Your session has expired. Please log in again.";
     }
@@ -209,8 +213,8 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
-//app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)also for LOGOUT
-app.get('/', (request, response) =>{//(delete this line in finshed code)
+//app.get('/',checkLoggedIn,(request, response) =>{ //(use this in finished code!!!!!😺!!!!!)also for LOGOUT
+app.get('/', (request, response) =>{
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
@@ -218,9 +222,9 @@ app.get('/', (request, response) =>{//(delete this line in finshed code)
 })
 
 //This protects all the pages below from being accessed without a login 
-app.use(checkLoggedIn);
+//app.use(checkLoggedIn);
 
-//Catalogue Page
+//Catalogue Page 😺
 app.get("/catalogue", (request, response) => {
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
@@ -229,63 +233,45 @@ app.get("/catalogue", (request, response) => {
 });
 
 app.post("/catalogue/add", (request, response) => {
-    const productId = Number(request.body.id);
-    const quantity = 1;
+  //Initialisation
+  const productId = Number(request.body.id);
 
-    const productsPath = path.join(__dirname, "Products.json");
+  //Verify the product json file exists
+  const products = readJSON(productPath)
+  if(!products) {
+    return response.status(400).json({message: "Product JSON not found"});
+  }
 
-    if (!fs.existsSync(productsPath)) {
-        return response.status(500).json({ message: "Products file missing" });
-    }
+  //Verify the product id from the catalogue can be found in the json
+  const product = products.find(obj => obj.id === productId);
+  if(!product) {
+    return response.status(404).json({message: "Product ID not found"});
+  }
 
-    // Read products
-    const productsData = fs.readFileSync(productsPath, "utf-8");
-    const products = JSON.parse(productsData);
+  //Read basket json data or create a new one
+  let basket = readJSON(basketPath) || [];
 
-    const product = products.find(x => x.id === productId);
+  //Check for any duplicate items
+  const existingItem = basket.find(obj => obj.id === productId);
 
-    if (!product) {
-        return response.status(404).json({ message: "Product not found" });
-    }
+  //If duplicate item then update quantity, else create a new item
+  if(existingItem) {
+    existingItem.quantity += 1;
+  }
+  else {
+    basket.push({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        quantity: 1
+    });
+  }
+  //Update the basket json
+  writeJSON(basketPath, basket);
 
-    const basketPath = path.join(__dirname, "basket.json");
-
-    let list = [];
-
-    // Read existing basket
-    if (fs.existsSync(basketPath)) {
-        try {
-            const data = fs.readFileSync(basketPath, "utf-8");
-            list = data ? JSON.parse(data) : [];
-        } catch (err) {
-            console.error("Error parsing basket.json:", err);
-            list = []; // fallback to empty array
-        }
-    }
-
-    // 🔎 Check for duplicate
-    const existingItem = list.find(x => x.id === productId);
-
-    if (existingItem) {
-        // Increase quantity
-        existingItem.quantity += 1;
-    } else {
-        // Create new item
-        const item = {
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            quantity: quantity
-        };
-
-        list.push(item);
-    }
-
-    // Save updated basket
-    fs.writeFileSync(basketPath, JSON.stringify(list, null, 2));
-
-    response.json({ message: "Product saved successfully" });
+  //Important for the database stage
+  response.json({ message: "Product added", item: product });
 });
 
 
@@ -307,22 +293,80 @@ app.get("/stores", (request, response) => {
 
 //Shopping List Page
 app.get("/list", (request, response) => {
-    const basketPath = path.join(__dirname, "basket.json");
-    let items = [];
+  const items = readJSON(basketPath);
+  response.render("list", { items, title: "Shopping List" });
+});
 
-    if (fs.existsSync(basketPath)) {
-        const data = fs.readFileSync(basketPath, "utf-8");
-        try {
-            items = JSON.parse(data || "[]");
-        } catch (err) {
-            console.log(error);
-            items = [];
-        }
-    }
-    response.render("list", { items, title: "Shopping List" });
+app.put("/list/:id/increase", (request, response) => {
+  const result = findItemById(request, response);
+  if(!result) return
+
+  const {item, itemList } = result;
+  item.quantity++;
+  writeJSON(basketPath, itemList);
+  response.json(item);
+});
+
+app.put("/list/:id/decrease", (request, response) => {
+  const result = findItemById(request, response);
+  if(!result) return
+
+  // Prevent quantity from going below 1
+  const {item, itemList } = result;
+  if (item.quantity > 1) {
+    item.quantity--;
+    writeJSON(basketPath, itemList);
+  }
+
+  response.json(item);
+});
+
+app.delete("/list/:id/", (request, response) => {
+  const itemList = readJSON(basketPath);
+  const id = parseInt(request.params.id, 10);
+  // Filter out the deleted item
+  const updatedList = itemList.filter(obj => obj.id !== id);
+
+  writeJSON(basketPath, updatedList);
+  response.json({ success: true });
 });
 
 //Profile Page
 app.get("/profile", (request, response) => {
     response.render("profile", {title: "Profile"});
 });
+
+
+//Additional Functions
+function findItemById(request, response) {
+  const itemList = readJSON(basketPath);
+  const itemId = parseInt(request.params.id, 10);
+  const item = itemList.find(obj => obj.id === itemId);
+
+  if(!item) {
+    return response.status(404).json({error: "Item not found"});
+  }
+
+  return {item, itemList};
+} 
+
+function readJSON(filePath) {
+  if(!fs.existsSync(filePath)) return [];
+  try {
+    const data = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(data || "[]");
+  } 
+  catch (err) {
+    console.error("Error reading json file", err);
+    return [];
+  }
+}
+
+function writeJSON(filePath, items) {
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
+  } 
+  catch(err) {
+    console.error("Error writing json file", err);
+  }
+}
