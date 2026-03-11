@@ -102,7 +102,6 @@
                         console.error("Failed to delete item:", err);
                     }
                 }
-
             });
 
             // Update Total Price
@@ -112,7 +111,6 @@
                 tbody.querySelectorAll(".product-price").forEach(priceElement => {
                     total += Number(priceElement.dataset.price);
                 });
-                
                 // :cat, (U+1F408), 😺 cat.
                 document.querySelector("#list-footer td").textContent = `Total: €${total.toFixed(2)}`;
             }
