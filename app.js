@@ -226,7 +226,7 @@ app.get('/', checkLoggedIn,(request, response) =>{
 })
 
 //This protects all the pages below from being accessed without a login 
-app.use(checkLoggedIn);
+//app.use(checkLoggedIn);
 
 //Catalogue Page 😺
 app.get("/catalogue", (request, response) => {
@@ -335,9 +335,28 @@ app.delete("/list/:id/", (request, response) => {
   response.json({ success: true });
 });
 
+/*
 //Profile Page
+app.get("/profile", checkLoggedIn, (request, response) => {
+    response.render("profile", {
+        title: "Profile",
+        user: request.session.user
+    });
+});
+/*
+
+*/
 app.get("/profile", (request, response) => {
-    response.render("profile", {title: "Profile"});
+    // For testing purposes, create a dummy user object
+    const dummyUser = {
+        username: "TestUser",
+        email: "testuser@example.com"
+    };
+
+    response.render("profile", {
+        title: "Profile",
+        user: dummyUser
+    });
 });
 
 

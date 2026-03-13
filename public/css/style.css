@@ -629,6 +629,62 @@ footer {
     flex-wrap: wrap;
 }
 
+/*Profile Forms*/
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.profile-info form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.profile-info .form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+
+.profile-info .btn {
+    background: var(--accent);
+    color: var(--surface);
+    padding: 12px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.profile-info .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.profile-input {
+    padding: 10px 12px;
+    border-radius: var(--border-radius);
+    border: double 2px var(--text-secondary);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    width: 100%;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.profile-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background-color: var(--bg);
+}
+
 
 
 /*------------------------------------*\
@@ -827,4 +883,8 @@ footer {
  *
  * CSS-Guidelines
  * https://cssguidelin.es/#syntax-and-formatting
+ *
+ *
+ *  Bootstrap
+ *  https://getbootstrap.com/docs/5.3/components/tooltips/#overview
  */
