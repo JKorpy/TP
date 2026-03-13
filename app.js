@@ -214,8 +214,12 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
+
+
+
 //app.get('/',checkLoggedIn,(request, response) =>{ //(use this in finished code!!!!!😺!!!!!)also for LOGOUT
-app.get('/', (request, response) =>{
+app.get('/', checkLoggedIn,(request, response) =>{
+
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
@@ -399,9 +403,28 @@ app.delete("/list/:id/", (request, response) => {
   response.json({ success: true });
 });
 
+/*
 //Profile Page
+app.get("/profile", checkLoggedIn, (request, response) => {
+    response.render("profile", {
+        title: "Profile",
+        user: request.session.user
+    });
+});
+/*
+
+*/
 app.get("/profile", (request, response) => {
-    response.render("profile", {title: "Profile"});
+    // For testing purposes, create a dummy user object
+    const dummyUser = {
+        username: "TestUser",
+        email: "testuser@example.com"
+    };
+
+    response.render("profile", {
+        title: "Profile",
+        user: dummyUser
+    });
 });
 
 
