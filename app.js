@@ -218,7 +218,7 @@ app.get('/', (request, response) =>{//(delete this line in finshed code)
 })
 
 //This protects all the pages below from being accessed without a login 
-app.use(checkLoggedIn);
+//app.use(checkLoggedIn);
 
 //Catalogue Page
 app.get("/catalogue", (request, response) => {
@@ -263,7 +263,7 @@ app.post("/catalogue/add", (request, response) => {
         }
     }
 
-    // 🔎 Check for duplicate
+    // Check for duplicate
     const existingItem = list.find(x => x.id === productId);
 
     if (existingItem) {
@@ -322,7 +322,26 @@ app.get("/list", (request, response) => {
     response.render("list", { items, title: "Shopping List" });
 });
 
+/*
 //Profile Page
+app.get("/profile", checkLoggedIn, (request, response) => {
+    response.render("profile", {
+        title: "Profile",
+        user: request.session.user
+    });
+});
+/*
+
+*/
 app.get("/profile", (request, response) => {
-    response.render("profile", {title: "Profile"});
+    // For testing purposes, create a dummy user object
+    const dummyUser = {
+        username: "TestUser",
+        email: "testuser@example.com"
+    };
+
+    response.render("profile", {
+        title: "Profile",
+        user: dummyUser
+    });
 });
