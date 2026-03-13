@@ -210,7 +210,7 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
 //app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)also for LOGOUT
-app.get('/', (request, response) =>{//(delete this line in finshed code)
+app.get('/', checkLoggedIn,(request, response) =>{//(delete this line in finshed code)
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
