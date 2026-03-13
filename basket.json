@@ -1,16 +1,9 @@
 [
   {
-    "id": 64,
-    "name": "Aged White Cheddar Popcorn",
-    "description": "Light and fluffy popcorn coated in aged white cheddar.",
-    "price": 26.96,
-    "quantity": 6
-  },
-  {
     "id": 141,
     "name": "Aeropress Coffee Maker",
     "description": "Portable coffee maker for rich brews on the go.",
     "price": 32.59,
-    "quantity": 1
+    "quantity": 6
   }
 ]

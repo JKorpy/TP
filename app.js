@@ -237,7 +237,7 @@ app.get("/catalogue", (request, response) => {
     return response.status(400).json({message: "Product JSON not found"});
   }
   
-  //Get the query parameters
+  //Get the query parameters (https://www.youtube.com/watch?v=JcAgTtycZg0)
   const search = request.query.search || "";
   const sort = request.query.sort || "ascending";
   const categoryFilter = request.query.category || "";
