@@ -11,12 +11,14 @@ exports.attachUserToLocals = (request, response, next) => {
 };
 
 // Middleware that ensures a user is logged in before accessing protected routes
-exports.checkLoggedIn = (request, response, next)=> {
-    if (request.session.user){
+exports.checkLoggedIn = (request, response, next) => {
+    if (request.session.user) {
         next()
+
     }else{
         response.redirect("/login")
-    }
+
+    } 
 }
 // middleware exports used to check if a user is logged in and if logged in will redirect the page 
 //(registration)
