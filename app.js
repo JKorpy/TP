@@ -15,9 +15,10 @@ const fs = require("fs");
 const path = require("path");
 
 const { checkLoggedIn, bypassLogin, attachUserToLocals, createCaptcha, generateCaptchaValue} = require('./middlewares');
+const { start } = require("repl");
 //JSON path
 const basketPath = path.join(__dirname, "basket.json");
-const productPath = path.join(__dirname, "Products.json");
+const productPath = path.join(__dirname, "products.json");
 
 
 //Express App
@@ -228,12 +229,79 @@ app.get('/', checkLoggedIn,(request, response) =>{
 //This protects all the pages below from being accessed without a login 
 //app.use(checkLoggedIn);
 
-//Catalogue Page 😺
+//Catalogue Page
 app.get("/catalogue", (request, response) => {
-    const data = fs.readFileSync("./Products.json");
-    const products = JSON.parse(data);
+  //Verify the product json file exists
+  const products = readJSON(productPath)
+  if(!products) {
+    return response.status(400).json({message: "Product JSON not found"});
+  }
+  
+  //Get the query parameters (https://www.youtube.com/watch?v=JcAgTtycZg0)
+  const search = request.query.search || "";
+  const sort = request.query.sort || "ascending";
+  const categoryFilter = request.query.category || "";
+  const currentPage = parseInt(request.query.page) || 1;
+  const limit = 24;
+  
 
-    response.render("catalogue", {products, title: "Catalogue"});
+  //Search Query (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter)
+  let filteredProducts = products.filter(obj => obj.name.toLowerCase().includes(search.toLowerCase()));
+
+  //Filter by Category
+  if(categoryFilter) {
+    filteredProducts = filteredProducts.filter(obj => obj.category === categoryFilter)
+  }
+  
+  //Get all unique categories from product
+  const uniqueCategories = [];
+  products.forEach(product => {
+    if(!uniqueCategories.includes(product.category)) {
+      uniqueCategories.push(product.category);
+    }
+  });
+
+  //Sort by Order (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
+  switch(sort) {
+    case "ascending":
+      filteredProducts.sort((product1,product2) => product1.name.localeCompare(product2.name));
+      break;
+    case "descending":
+      filteredProducts.sort((product1,product2) => product2.name.localeCompare(product1.name));
+      break;      
+    case "lowPrice":
+      filteredProducts.sort((product1, product2) => parseFloat(product1.price) - parseFloat(product2.price))
+      break;
+    case "highPrice":
+      filteredProducts.sort((product1, product2) => parseFloat(product2.price) - parseFloat(product1.price))
+      break;  
+    default:
+      //No sorting query parameter applied
+      break; 
+  }
+
+  //Pagination Logic (https://www.geeksforgeeks.org/node-js/pagination-using-node-mongo-express-js-and-ejs/)
+
+  const totalProducts = filteredProducts.length;
+  //Example: Divides 200 products by 24 while roudning it up to 9.
+  const totalPages = Math.ceil(totalProducts / limit);
+  //Calculates the product range
+  const startIndex = (currentPage - 1) * limit;
+  const endIndex = startIndex + limit;
+  //Extracts the products between the starting and ending index
+  const productPage = filteredProducts.slice(startIndex, endIndex);
+
+  response.render("catalogue", {
+    title: "Catalogue",
+    products: productPage,
+    currentPage,
+    totalPages,
+    totalProducts,
+    search,
+    sort,
+    categoryFilter,
+    uniqueCategories
+  });
 });
 
 app.post("/catalogue/add", (request, response) => {

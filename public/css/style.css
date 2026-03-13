@@ -501,27 +501,31 @@ footer {
     padding: 14px 35px;
     background: var(--surface);;
     transition: background 0.3s ease;
+    
 }
 
-#catalogue-footer p,
-.page-btn,
-.page-number {
+#catalogue-footer a {
+    text-decoration: none;
+}
+
+#catalogue-footer p, .page-number {
     color: var(--text-primary);
 }
+
     
 #page-numbers {
     display: flex;
     gap: 8px;
 }
 
-.page-btn, .page-number {
+.page-number {
     background: var(--surface);
     padding: 8px 12px;
     border-radius: 6px;
 }
 
 .page-number.active {
-    background: var(--accent);
+    background-color: var(--accent);
 }
 
 /*------------------------------------*\
@@ -814,33 +818,12 @@ footer {
   #Product Modal
 \*------------------------------------*/
 
-#product-section {
+#product-section {     
     text-align: center;
+    background-color: var(--surface);
 }
 
-#product-content {
 
-}
-
-#product-img {
-
-}
-
-#product-title {
-
-}
-
-#product-description {
-
-}
-
-#product-footer {
-
-}
-
-#product-price {
-
-}
 /*------------------------------------*\
  .login
 \*------------------------------------*/

@@ -1,3 +1,9 @@
 [
-  
+  {
+    "id": 141,
+    "name": "Aeropress Coffee Maker",
+    "description": "Portable coffee maker for rich brews on the go.",
+    "price": 32.59,
+    "quantity": 6
+  }
 ]
