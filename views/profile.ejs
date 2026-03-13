@@ -9,44 +9,45 @@
     <!--Main Content-->
     <div id="profile-container">
 
-        <!-- USER CARD -->
-        <div class="profile-card">
+    <!-- USER CARD -->
+    <div class="profile-card">
 
-            <div class="profile-avatar">
-                <img src="/img/profile_svg.svg" alt="User Avatar">
-            </div>
-
-            <div class="profile-info">
-                <h2>Username</h2>
-                <p>Email</p>
-                
-            </div>
-
+        <div class="profile-avatar">
+        <img src="/img/profile_svg.svg" alt="User Avatar">
         </div>
 
+        <div class="profile-info">
+          <form id="profileForm">
 
-        <!-- PROFILE ACTIONS -->
-        <div class="profile-actions">
+            <div class="profile-field">
+              <label>Username</label>
+              <input type="text" name="username" class="profile-input" value="<%= user.username %>" disabled>
+            </div>
 
-            <a href="/catalogue" class="btn">
-                Browse Catalogue
-            </a>
+            <div class="profile-field">
+              <label>Email</label>
+              <input type="email" name="email" class="profile-input" value="<%= user.email %>" disabled>
+            </div>
 
-            <a href="/list" class="btn">
-                My Shopping List
-            </a>
+            <button type="button" id="editProfileBtn" class="btn">Update Profile</button>
 
-            <a href="/contact" class="btn">
-                Contact Support
-            </a>
-
-            <a href="/logout" class="btn">
-                Logout
-            </a>
-
+          </form>
         </div>
+
 
     </div>
+
+    </div>
+
+    <script>
+    const editBtn = document.getElementById('editProfileBtn');
+    const inputs = document.querySelectorAll('#profileForm input');
+
+    editBtn.addEventListener('click', () => {
+    inputs.forEach(input => input.disabled = !input.disabled);
+    editBtn.textContent = inputs[0].disabled ? 'Update Profile' : 'Save Changes';
+    });
+    </script>
 
 
   <%- include("./partials/footer.ejs") %>
@@ -58,6 +59,8 @@
 
     <!--Calling JavaScript for Theme function-->
     <script src="/js/theme.js"></script>
+    <!--Calling JavaScript for Profile Form function-->
+    <script src="/js/profile.js"></script>
     
 </body>
 
