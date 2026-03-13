@@ -225,7 +225,7 @@ app.get('/', (request, response) =>{
 //This protects all the pages below from being accessed without a login 
 //app.use(checkLoggedIn);
 
-//Catalogue Page 😺
+//Catalogue Page
 app.get("/catalogue", (request, response) => {
   //Verify the product json file exists
   const products = readJSON(productPath)
