@@ -70,7 +70,7 @@ app.get('/login', bypassLogin, createCaptcha, (request, response) => {
 //login post route to recieve the username and password from form
 app.post('/login', async (request, response) => {
   try {
-    const { username, password, captchaInput } = request.body;
+    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
 
     // Check captcha first
     if (!captchaInput || captchaInput.toUpperCase() !== request.session.captcha) {
@@ -157,7 +157,7 @@ app.get("/register", bypassLogin, createCaptcha, (request, response) => {
 //Pulls in username and password to be validated
 app.post("/register", async (request, response) => {
   try {
-    const { username, password, captchaInput } = request.body;
+    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
 if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captcha) {
 
   const captcha = generateCaptchaValue();
@@ -175,18 +175,24 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
     }
     //Validates password is not less than 8 charachters 
        if (password.length < 8) {
-      return response.render("register", {
-        error: "Password must be at least 8 characters",
-        username
-      });
-    }
+  const captcha = generateCaptchaValue();
+  request.session.captcha = captcha;
+
+  return response.render("register", {
+    error: "Password must be at least 8 characters",
+    captcha
+  });
+}
     //this hashes the password using bcrypt 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // RETURNING id + username lets us auto-login immediately
     const result = await pool.query(
-      "INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username",
-      [username, hashedPassword]
+      `INSERT INTO users 
+      (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, username`,
+      [firstName, lastName, username, email, phone || null, dob || null, hashedPassword]
     );
 
     const user = result.rows[0];
