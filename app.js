@@ -322,19 +322,19 @@ app.get("/list", (request, response) => {
     response.render("list", { items, title: "Shopping List" });
 });
 
-/*
-//Profile Page
+
+/*/Profile Page
 app.get("/profile", checkLoggedIn, (request, response) => {
     response.render("profile", {
         title: "Profile",
         user: request.session.user
     });
 });
-/*
-
 */
+
+//
 app.get("/profile", (request, response) => {
-    // For testing purposes, create a dummy user object
+    // For testing purposes, created a dummy user object
     const dummyUser = {
         username: "TestUser",
         email: "testuser@example.com"
@@ -345,3 +345,4 @@ app.get("/profile", (request, response) => {
         user: dummyUser
     });
 });
+//
