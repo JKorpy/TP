@@ -13,7 +13,13 @@ const session = require('express-session')
 const fs = require("fs");
 //Path
 const path = require("path");
+
 const { checkLoggedIn, bypassLogin, attachUserToLocals, createCaptcha, generateCaptchaValue} = require('./middlewares');
+const { start } = require("repl");
+//JSON path
+const basketPath = path.join(__dirname, "basket.json");
+const productPath = path.join(__dirname, "products.json");
+
 
 //Express App
 const app = express();
@@ -54,7 +60,6 @@ app.listen(3000);
 // Route to display the login page, it redirects if the user is already logged in
 app.get('/login', bypassLogin, createCaptcha, (request, response) => {
     let error = null;
-
     if (request.query.error === "session-expired") {
         error = "Your session has expired. Please log in again.";
     }
@@ -65,7 +70,7 @@ app.get('/login', bypassLogin, createCaptcha, (request, response) => {
 //login post route to recieve the username and password from form
 app.post('/login', async (request, response) => {
   try {
-    const { username, password, captchaInput } = request.body;
+    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
 
     // Check captcha first
     if (!captchaInput || captchaInput.toUpperCase() !== request.session.captcha) {
@@ -152,7 +157,7 @@ app.get("/register", bypassLogin, createCaptcha, (request, response) => {
 //Pulls in username and password to be validated
 app.post("/register", async (request, response) => {
   try {
-    const { username, password, captchaInput } = request.body;
+    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
 if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captcha) {
 
   const captcha = generateCaptchaValue();
@@ -170,18 +175,24 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
     }
     //Validates password is not less than 8 charachters 
        if (password.length < 8) {
-      return response.render("register", {
-        error: "Password must be at least 8 characters",
-        username
-      });
-    }
+  const captcha = generateCaptchaValue();
+  request.session.captcha = captcha;
+
+  return response.render("register", {
+    error: "Password must be at least 8 characters",
+    captcha
+  });
+}
     //this hashes the password using bcrypt 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // RETURNING id + username lets us auto-login immediately
     const result = await pool.query(
-      "INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username",
-      [username, hashedPassword]
+      `INSERT INTO users 
+      (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, username`,
+      [firstName, lastName, username, email, phone || null, dob || null, hashedPassword]
     );
 
     const user = result.rows[0];
@@ -209,8 +220,12 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 
 //configure the routes, creating a basic route like a home route 
 //Passing products into EJS (sample products)
-//app.get('/',checkLoggedIn,(request, response) =>{ (use this in finished code!!!!!!!!!!)also for LOGOUT
-app.get('/', (request, response) =>{//(delete this line in finshed code)
+
+
+
+//app.get('/',checkLoggedIn,(request, response) =>{ //(use this in finished code!!!!!😺!!!!!)also for LOGOUT
+app.get('/', checkLoggedIn,(request, response) =>{
+
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
     response.render("index", { products, title: "Home", error: null})
@@ -222,70 +237,119 @@ app.get('/', (request, response) =>{//(delete this line in finshed code)
 
 //Catalogue Page
 app.get("/catalogue", (request, response) => {
-    const data = fs.readFileSync("./Products.json");
-    const products = JSON.parse(data);
+  //Verify the product json file exists
+  const products = readJSON(productPath)
+  if(!products) {
+    return response.status(400).json({message: "Product JSON not found"});
+  }
+  
+  //Get the query parameters (https://www.youtube.com/watch?v=JcAgTtycZg0)
+  const search = request.query.search || "";
+  const sort = request.query.sort || "ascending";
+  const categoryFilter = request.query.category || "";
+  const currentPage = parseInt(request.query.page) || 1;
+  const limit = 24;
+  
 
-    response.render("catalogue", {products, title: "Catalogue"});
+  //Search Query (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter)
+  let filteredProducts = products.filter(obj => obj.name.toLowerCase().includes(search.toLowerCase()));
+
+  //Filter by Category
+  if(categoryFilter) {
+    filteredProducts = filteredProducts.filter(obj => obj.category === categoryFilter)
+  }
+  
+  //Get all unique categories from product
+  const uniqueCategories = [];
+  products.forEach(product => {
+    if(!uniqueCategories.includes(product.category)) {
+      uniqueCategories.push(product.category);
+    }
+  });
+
+  //Sort by Order (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
+  switch(sort) {
+    case "ascending":
+      filteredProducts.sort((product1,product2) => product1.name.localeCompare(product2.name));
+      break;
+    case "descending":
+      filteredProducts.sort((product1,product2) => product2.name.localeCompare(product1.name));
+      break;      
+    case "lowPrice":
+      filteredProducts.sort((product1, product2) => parseFloat(product1.price) - parseFloat(product2.price))
+      break;
+    case "highPrice":
+      filteredProducts.sort((product1, product2) => parseFloat(product2.price) - parseFloat(product1.price))
+      break;  
+    default:
+      //No sorting query parameter applied
+      break; 
+  }
+
+  //Pagination Logic (https://www.geeksforgeeks.org/node-js/pagination-using-node-mongo-express-js-and-ejs/)
+
+  const totalProducts = filteredProducts.length;
+  //Example: Divides 200 products by 24 while roudning it up to 9.
+  const totalPages = Math.ceil(totalProducts / limit);
+  //Calculates the product range
+  const startIndex = (currentPage - 1) * limit;
+  const endIndex = startIndex + limit;
+  //Extracts the products between the starting and ending index
+  const productPage = filteredProducts.slice(startIndex, endIndex);
+
+  response.render("catalogue", {
+    title: "Catalogue",
+    products: productPage,
+    currentPage,
+    totalPages,
+    totalProducts,
+    search,
+    sort,
+    categoryFilter,
+    uniqueCategories
+  });
 });
 
 app.post("/catalogue/add", (request, response) => {
-    const productId = Number(request.body.id);
-    const quantity = 1;
+  //Initialisation
+  const productId = Number(request.body.id);
 
-    const productsPath = path.join(__dirname, "Products.json");
+  //Verify the product json file exists
+  const products = readJSON(productPath)
+  if(!products) {
+    return response.status(400).json({message: "Product JSON not found"});
+  }
 
-    if (!fs.existsSync(productsPath)) {
-        return response.status(500).json({ message: "Products file missing" });
-    }
+  //Verify the product id from the catalogue can be found in the json
+  const product = products.find(obj => obj.id === productId);
+  if(!product) {
+    return response.status(404).json({message: "Product ID not found"});
+  }
 
-    // Read products
-    const productsData = fs.readFileSync(productsPath, "utf-8");
-    const products = JSON.parse(productsData);
+  //Read basket json data or create a new one
+  let basket = readJSON(basketPath) || [];
 
-    const product = products.find(x => x.id === productId);
+  //Check for any duplicate items
+  const existingItem = basket.find(obj => obj.id === productId);
 
-    if (!product) {
-        return response.status(404).json({ message: "Product not found" });
-    }
+  //If duplicate item then update quantity, else create a new item
+  if(existingItem) {
+    existingItem.quantity += 1;
+  }
+  else {
+    basket.push({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        quantity: 1
+    });
+  }
+  //Update the basket json
+  writeJSON(basketPath, basket);
 
-    const basketPath = path.join(__dirname, "basket.json");
-
-    let list = [];
-
-    // Read existing basket
-    if (fs.existsSync(basketPath)) {
-        try {
-            const data = fs.readFileSync(basketPath, "utf-8");
-            list = data ? JSON.parse(data) : [];
-        } catch (err) {
-            console.error("Error parsing basket.json:", err);
-            list = []; // fallback to empty array
-        }
-    }
-
-    // Check for duplicate
-    const existingItem = list.find(x => x.id === productId);
-
-    if (existingItem) {
-        // Increase quantity
-        existingItem.quantity += 1;
-    } else {
-        // Create new item
-        const item = {
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            quantity: quantity
-        };
-
-        list.push(item);
-    }
-
-    // Save updated basket
-    fs.writeFileSync(basketPath, JSON.stringify(list, null, 2));
-
-    response.json({ message: "Product saved successfully" });
+  //Important for the database stage
+  response.json({ message: "Product added", item: product });
 });
 
 
@@ -307,19 +371,42 @@ app.get("/stores", (request, response) => {
 
 //Shopping List Page
 app.get("/list", (request, response) => {
-    const basketPath = path.join(__dirname, "basket.json");
-    let items = [];
+  const items = readJSON(basketPath);
+  response.render("list", { items, title: "Shopping List" });
+});
 
-    if (fs.existsSync(basketPath)) {
-        const data = fs.readFileSync(basketPath, "utf-8");
-        try {
-            items = JSON.parse(data || "[]");
-        } catch (err) {
-            console.log(error);
-            items = [];
-        }
-    }
-    response.render("list", { items, title: "Shopping List" });
+app.put("/list/:id/increase", (request, response) => {
+  const result = findItemById(request, response);
+  if(!result) return
+
+  const {item, itemList } = result;
+  item.quantity++;
+  writeJSON(basketPath, itemList);
+  response.json(item);
+});
+
+app.put("/list/:id/decrease", (request, response) => {
+  const result = findItemById(request, response);
+  if(!result) return
+
+  // Prevent quantity from going below 1
+  const {item, itemList } = result;
+  if (item.quantity > 1) {
+    item.quantity--;
+    writeJSON(basketPath, itemList);
+  }
+
+  response.json(item);
+});
+
+app.delete("/list/:id/", (request, response) => {
+  const itemList = readJSON(basketPath);
+  const id = parseInt(request.params.id, 10);
+  // Filter out the deleted item
+  const updatedList = itemList.filter(obj => obj.id !== id);
+
+  writeJSON(basketPath, updatedList);
+  response.json({ success: true });
 });
 
 
@@ -345,4 +432,38 @@ app.get("/profile", (request, response) => {
         user: dummyUser
     });
 });
-//
+
+
+//Additional Functions
+function findItemById(request, response) {
+  const itemList = readJSON(basketPath);
+  const itemId = parseInt(request.params.id, 10);
+  const item = itemList.find(obj => obj.id === itemId);
+
+  if(!item) {
+    return response.status(404).json({error: "Item not found"});
+  }
+
+  return {item, itemList};
+} 
+
+function readJSON(filePath) {
+  if(!fs.existsSync(filePath)) return [];
+  try {
+    const data = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(data || "[]");
+  } 
+  catch (err) {
+    console.error("Error reading json file", err);
+    return [];
+  }
+}
+
+function writeJSON(filePath, items) {
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
+  } 
+  catch(err) {
+    console.error("Error writing json file", err);
+  }
+}
