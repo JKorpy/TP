@@ -5,62 +5,64 @@
     <%- include("./partials/header.ejs") %>   
 <body>
     <%- include("./partials/nav.ejs") %>
-    
+    <!-- Catalogue Header -->
     <main>
         <h1>Welcome to Catalogue</h1>
         <p>Browse Products!</p>
     </main>
+    <!-- Catalogue Section -->
     <div id="catalogue-container">
         <!-- Sidebar -->
         <div id="catalogue-sidebar">
             <div id="sticky-sidebar">
                 <h2>Filters</h2>
-                <form id="catalogue-filter">
+                <form id="catalogue-filter" method="GET" action="/catalogue">
                     <!-- Search -->
                     <div class="filter-group">
                         <label for="search">Search</label>
-                        <input type="text" id="search" placeholder="Search products...">
+                        <input type="text" name="search" placeholder="<%= search ||  "Search products..."%>">
                     </div>
                     <!-- Select Dropdown -->
                     <div class="filter-group">
-                        <label for="select">Select</label>
-                        <select class="category">
-                        <option value="ascending">Ascending Order</option>
-                        <option value="descending">Descending Order</option>
-                        <option value="lowPrice">Price - Lowest First</option>
-                        <option value="highPrice">Price - Highest FIrce</option>
+                        <label for="sort">Select</label>
+                        <select name="sort" class="category" onchange="this.form.submit()" >
+                            <option value="ascending" <%= sort === "ascending" ? "selected" : "" %>>Ascending Order</option>
+                            <option value="descending" <%= sort === "descending" ? "selected" : "" %>>Descending Order</option>
+                            <option value="lowPrice" <%= sort === "lowPrice" ? "selected" : "" %>>Price - Lowest First</option>
+                            <option value="highPrice" <%= sort === "highPrice" ? "selected" : "" %>>Price - Highest FIrce</option>
                         </select>
                     </div>
                     <!-- Select Dropdown -->
                     <div class="filter-group">
                         <label for="category">Category</label>
-                        <select class="category">
-                        <option value="food">Food</option>
-                        <option value="clothe">Clothes</option>
-                        <option value="electronic">Electronics</option>
+                        <select name="category" class="category" onchange="this.form.submit()" >
+                            <option value="">All</option>
+                            <% uniqueCategories.forEach(group => { %>
+                                <option value="<%= group %>" <%= categoryFilter === group ? "selected" : "" %>><%= group %></option>
+                            <% }); %>
                         </select>
-                    </div>                
-                    <!-- Checkbox Filters -->
+                    </div>  
+
+                    <!-- Brand Filters --> 
+                    <!-- 
                     <div class="filter-group">
                         <label>Brand</label>
-                        <!-- Brand -->
                         <div class="checkbox-group">
                         <label class="checkbox-item">
                             <input type="checkbox" name="check" value="lidl-val">
                             <span>Lidl</span>
                         </label>
-                        <!-- Clothes -->
                         <label class="checkbox-item">
                             <input type="checkbox" name="check" value="aldi-val">
                             <span>Aldi</span>
                         </label>
-                        <!-- Item -->
                         <label class="checkbox-item">
                             <input type="checkbox" name="check" value="supervalu-val">
                             <span>Supervalu</span>
                         </label>
                         </div>
-                    </div>
+                    </div>  
+                    -->
                     <!-- Submit Button -->
                     <button type="submit" id="filterBTN">Apply Filters</button>
                 </form>
@@ -74,7 +76,7 @@
                     <div class="catalogue-card">
                         <!-- Image -->
                         <div class="card-image">
-                            <img class="product-image"src="https://picsum.photos/400/300" alt="<%= product.name %>"">
+                            <img class="product-image" src="https://picsum.photos/400/300" alt="<%= product.name %>"">
                         </div>
                         <!-- Description -->
                         <div class="card-content">
@@ -89,46 +91,63 @@
                     </div>
                 <% }) %> 
             <% } else { %>
-            <p>No products available...</p>
+            <p>No products available... <%= products.length %></p>
             <% } %>            
         </div>
         <!-- Pagination -->
         <footer id="catalogue-footer">
-            <p>Showing 1 - 12 of 96</p>
+            <!-- Example (Showing 1 - 24 of 200)-->
+            <p>Showing <%= (currentPage - 1) * 24 + 1 %> - <%= Math.min(currentPage * 24, totalProducts) %> of <%= totalProducts %></p>
             <!-- Page Numbers -->
             <div id="page-numbers">
                 <!-- Previous Page -->
-                <button class="page-btn">« Prev</button>
-                <button class="page-number active">1</button>
-                <button class="page-number">2</button>
-                <button class="page-number">3</button>
-                <button class="page-number">4</button>
-                <button class="page-number">5</button>
-                <!-- Next Page -->
-                <button class="page-btn">Next »</button>            
+                <% if (currentPage > 1) { %>
+                    <a href="?page=<%= currentPage - 1 %>">
+                        <button class="page-number">« Prev</buton>
+                    </a>
+               <% } %>
+
+               <!-- Page Numbers -->
+               <% for(let i=1; i <= totalPages; i++) { %>
+                    <% if (i === currentPage) { %>
+                        <a href="?page=<%= i %>">
+                            <button class="page-number active"><%= i %></button>
+                        </a>
+                    <% } else { %>
+                        <a href="?page=<%= i %>">
+                            <button class="page-number"><%= i %></button>
+                        </a>
+                    <% } %>
+               <% } %>
+
+               <!-- Next Page -->
+                <% if (currentPage < totalPages) { %>
+                    <a href="?page=<%= currentPage + 1 %>">
+                        <button class="page-number">Next »</buton>
+                    </a>
+               <% } %>               
+    
             </div>
         </footer>
     </div>    
+    <!-- Catalogue Modal -->
     <div id="catalogue-modal" class="modal">
-        <div class="modal-body" data-id="">
+        <!-- Modal Body -->
+        <div class="modal-body" data-id="">             
+            <!-- Modal Header -->
             <div class="modal-header">
                 <h2>Product</h2>
             </div>
-            <div id="product-section" class="modal-section">
+            <!-- Production Section 1 (original)-->
+            <div id="product-section-1" class="modal-section">
                 <!-- Image -->
-                <div>
-                    <img id="product-image"src="https://picsum.photos/400/300" alt="Product image">
-                </div>
+                <div><img id="product-image"src="https://picsum.photos/400/300" alt="Product image"></div>
                 <!-- Description -->
                 <div id="product-content">
                     <!-- Title -->
-                    <h3 id="product-title">
-                        Item this is a very nice product 500ml and 600gb. What would you like?
-                    </h3>
+                    <h3 id="product-title">Item this is a very nice product 500ml and 600gb. What would you like?</h3>
                     <!-- Description -->
-                    <p id="product-description">
-                        What to do?
-                    </p>
+                    <p id="product-description">What to do?</p>
                     <!-- Price & Button -->
                     <div id="product-footer">
                         <p id="product-price">€5.50</p>
@@ -136,43 +155,85 @@
                         <button id="compare-btn">Compare</button>
                     </div>
                 </div>   
+            </div>
+            <!-- Production Section 2 -->
+            <div id="product-section-2" class="modal-section">
+                <!-- Image -->
+                <div><img id="product-image"src="https://picsum.photos/400/300" alt="Product image"></div>
+                <!-- Description -->
+                <div id="product-content">
+                    <!-- Title -->
+                    <h3 id="product-title">Item this is a very nice product 500ml and 600gb. What would you like?</h3>
+                    <!-- Description -->
+                    <p id="product-description">What to do?</p>
+                    <!-- Price & Button -->
+                    <div id="product-footer">
+                        <p id="product-price">€5.50</p>
+                        <button class="modal-btn">Add to List</button>
+                        <button id="compare-btn">Compare</button>
+                    </div>
+                </div>   
+            </div>            
+            <div>
+                <table>
+                    <thead>
+                        <th>Brand</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Compare</th>
+                    </thead>
+                </table>
             </div>   
+            <!-- Modal Footer --> 
             <div class="modal-footer">
                 <button id="modal-close-btn">Close</button>
-            </div>             
+            </div>                       
         </div>
     </div>
     <%- include("./partials/footer.ejs") %> 
 
     <script>
-        const modal = document.getElementById("catalogue-modal");
-        const closeModalBTN = document.getElementById("modal-close-btn");
-
-        document.querySelectorAll(".product-image").forEach(action => {
-            action.addEventListener("click", function() {
-                modal.style.display = "block";
+        //Wait for DOM to load
+        document.addEventListener("DOMContentLoaded", () => {
+            //Initialisation
+            const modal = document.getElementById("catalogue-modal");
+            const closeModalBTN = document.getElementById("modal-close-btn");
+            //Event delagation
+            document.addEventListener("click", (e) => {
+                //Open the product modal
+                if(e.target.classList.contains("product-image")) {
+                    modal.style.display = "block";
+                }
+                //Close the product modal
+                if(e.target === closeModalBTN) {
+                    modal.style.display = "none";
+                }
+                //Add product to the list
+                if(e.target.classList.contains("cardBTN")) {
+                    const productId = e.target.dataset.id;
+                    //console.log("Clicked add button:", productId);
+                    addProductToList(productId);
+                }
             });
-        });       
-        
-        closeModalBTN.addEventListener("click", () => {
-            modal.style.display = "none";
         });
 
-        document.querySelectorAll(".cardBTN").forEach(button => {
-            button.addEventListener("click", async () => {
-                const productId = button.dataset.id;
-
-                await fetch("/catalogue/add", {
+        async function addProductToList(productId) {
+            //Attempt to create a post request
+            //If successful, create alert otherwise produce an error
+            try {
+                const response = await fetch("/catalogue/add", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({ id: productId })
                 });
-
-                alert("Product added!");
-            });
-        });
+                console.log("Product added");
+            }
+            catch (err) {
+                console.log("Add product failed: ", err);
+            }
+        }
     </script>
 
     <!-- Floating Dark Mode Toggle -->
@@ -180,7 +241,7 @@
       <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
     </button>
 
-    <!--Calling JavaScript for Theme function-->
+    <!--Calling JavaScript for Theme function 😺-->
     <script src="/js/theme.js"></script>
 
 </body>
