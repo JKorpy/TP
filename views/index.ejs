@@ -16,6 +16,26 @@
     <p>Discover the best value prices of products from supermarkets across Ireland.</p>
   </main>
 
+
+  <section class="featured-section">
+    <h2>Featured Stores</h2>
+
+    <div class="store-grid">
+      <% stores.forEach(store => { %>
+        <a href="<%= store.url %>" target="_blank" class="store-card">
+          
+          <div class="store-logo">
+            <img src="<%= store.logo %>" alt="<%= store.name %> logo">
+          </div>
+
+          <p class="store-name"><%= store.name %></p>
+
+        </a>
+      <% }) %>
+    </div>
+  </section>
+
+
   <h2>Featured Products</h2>
   <div class="products-grid">
     <% if (products.length > 0) { %>
@@ -37,11 +57,6 @@
         </div>
 
 
-
-  <section class="about">
-    <h2>About Us</h2>
-    <p>Our 'best Value Indicator Product selector' focuses on quality and affordability.</p>
-  </section>
 
   <%- include("./partials/footer.ejs") %>
 

@@ -115,11 +115,23 @@ app.post('/login', async (request, response) => {
       });
     }
 
+    
     // Store the logged in user details in the session so they remain authenticated
     request.session.user = {
       id: user.id,
-      username: user.username
+      firstName: user.first_name,
+      lastName: user.last_name,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      dob: user.dob,
+      password: user.password
     };
+
+    /*
+    //Alternative instead of manual mapping
+     request.session.user = user; //Doesn't take in firstname, lastname & password
+    */
 
     // Clear captcha after successful login
     request.session.captcha = null;
@@ -222,15 +234,43 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 //Passing products into EJS (sample products)
 
 
+    //Adding featured stores:
+    const stores = [
+      {
+        name: "Tesco",
+        logo: "/img/tescoLogo.jpg",
+        url: "https://www.tesco.com/"
+      },
+      {
+        name: "SuperValu",
+        logo: "/img/supervaluLogo.webp",
+        url: ""
+      },
+      {
+        name: "Dunnes",
+        logo: "/img/dunnesLogo.webp",
+        url: "https://www.dunnesstoresgrocery.com/"
+      },
+      {
+        name: "Lidl",
+        logo: "/img/lidlLogo.png",
+        url: "https://www.lidl.com/"
+      }
 
-//app.get('/',checkLoggedIn,(request, response) =>{ //(use this in finished code!!!!!😺!!!!!)also for LOGOUT
+    ];
+
+//Home Page
 app.get('/', checkLoggedIn,(request, response) =>{
 
     const data = fs.readFileSync("./Products.json");
     const products = JSON.parse(data);
-    response.render("index", { products, title: "Home", error: null})
+    //Shuffling products & displaying 8 random products:
+    const shuffled = [...products].sort(() => 0.5 - Math.random()); //cloning before sorting so that it doesn't disrupt original product data
+    const featuredProducts = shuffled.slice(0,8); //setting cloned products as 8 random products only
 
-})
+    response.render("index", { products: featuredProducts, stores, title: "Home", error: null});
+
+});
 
 //This protects all the pages below from being accessed without a login 
 //app.use(checkLoggedIn);
@@ -353,16 +393,11 @@ app.post("/catalogue/add", (request, response) => {
 });
 
 
-
 //Contact Page
 app.get("/contact", (request, response) => {
     response.render("contact", {title: "Contact"});
 });
 
-//Catalogue Page
-app.get("/about", (request, response) => {
-    response.render("about", {title: "About Us"});
-});
 
 //Stores Page
 app.get("/stores", (request, response) => {
@@ -409,7 +444,7 @@ app.delete("/list/:id/", (request, response) => {
   response.json({ success: true });
 });
 
-/*
+
 //Profile Page
 app.get("/profile", checkLoggedIn, (request, response) => {
     response.render("profile", {
@@ -417,11 +452,29 @@ app.get("/profile", checkLoggedIn, (request, response) => {
         user: request.session.user
     });
 });
-/*
 
-*/
+//Updating profile info
+app.post('/profile/update', (req, res) => {
+    const updatedUser = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        username: req.body.username,
+        email: req.body.email,
+        phone: req.body.phone,
+        dob: req.body.dob,
+        password: req.body.password
+    };
+
+    //update DB or session
+    console.log(updatedUser);
+
+    res.redirect('/profile');
+});
+
+
+/*
 app.get("/profile", (request, response) => {
-    // For testing purposes, create a dummy user object
+    // For testing purposes, created a dummy user object
     const dummyUser = {
         username: "TestUser",
         email: "testuser@example.com"
@@ -432,7 +485,7 @@ app.get("/profile", (request, response) => {
         user: dummyUser
     });
 });
-
+*/
 
 //Additional Functions
 function findItemById(request, response) {
