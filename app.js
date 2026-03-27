@@ -262,7 +262,7 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 //Home Page
 app.get('/', checkLoggedIn,(request, response) =>{
 
-    const data = fs.readFileSync("./Products.json");
+    const data = fs.readFileSync("./products.json");
     const products = JSON.parse(data);
     //Shuffling products & displaying 8 random products:
     const shuffled = [...products].sort(() => 0.5 - Math.random()); //cloning before sorting so that it doesn't disrupt original product data
