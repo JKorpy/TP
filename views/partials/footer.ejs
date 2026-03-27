@@ -1,6 +1,47 @@
-<footer>
-  <!--<hr>-->
-  Copyright &copy; National College of Ireland
+<footer class="main-footer">
+  <div class="footer-content">
+
+    <!-- Left Column-->
+    <div class="footer-section">
+      <h4>About Us</h4>
+      <p>bVIPs is here to help you find the best value products across Ireland!</p>
+    </div>
+
+    <!-- Middle Column-->
+    <div class="footer-section">
+      <h4>Socials</h4>
+      <ul>
+        <li>
+          <a href="https://www.instagram.com/" data-bs-placement="bottom" title="Instagram">
+            <img src="/img/insta_svg.svg" alt="instagram" data-bs-toggle="tooltip" >
+          </a>
+        </li>
+        <li>
+          <a href="https://www.facebook.com/" data-bs-placement="bottom" title="Facebook">
+            <img src="/img/fb_svg.svg" alt="instagram" data-bs-toggle="tooltip" >
+          </a>
+        </li>
+        <li>
+          <a href="https://www.whatsapp.com/" data-bs-placement="bottom" title="WhatsApp">
+            <img src="/img/wa_svg.svg" alt="instagram" data-bs-toggle="tooltip" >
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!--Right Column-->
+    <div class="footer-section">
+      <h4>Contact</h4>
+      <p><strong>Email: </strong>support@bvips.ie</p>
+      <p><strong>Location: </strong>Dublin, Ireland</p>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p><em>&copy; <%= new Date().getFullYear() %> National College of Ireland</em></p>  <!--Using JavaScript date object with current year...-->
+  </div>
+
 
   <script>
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -10,8 +51,8 @@
     })
   </script>
 
-
   <!--Loading Bootstrap JavaScript-->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </footer>
+
