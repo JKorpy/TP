@@ -12,3 +12,5 @@ Students from the National College of Ireland working on their project for the T
 ### Project Overview
 A comparative shopping website that allows clients to produce a list of items with the lowest price based on the available stores (E.g. SuperValu, Dunnes Stores, Tesco, Lidl, Aldi, etc.) 
 
+#### Note:
+When running the website, college wifi does not work. Use a personal hotspot instead.
