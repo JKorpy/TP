@@ -12,6 +12,7 @@ exports.attachUserToLocals = (request, response, next) => {
 
 // Middleware that ensures a user is logged in before accessing protected routes
 exports.checkLoggedIn = (request, response, next) => {
+
     if (request.session.user) {
         next()
 

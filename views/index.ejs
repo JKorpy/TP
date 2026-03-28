@@ -42,19 +42,16 @@
 
     <% products.forEach(product => { %>
         <div class="product-card">
-        <img src="<%= product.imageURL %>" alt="<%= product.name %>">
-        
-        <h3><%= product.name %></h3>
-        <p><%= product.description %></p>
-        <p class="price">€<%= product.price %></p>
-        
+          <h3><%= product.name %></h3>
+          <p><%= product.description %></p>
+          <p class="price">€<%= product.price %></p>
         </div>
     <% }) %>
 
     <% } else { %>
     <p>No products available...</p>
     <% } %>
-        </div>
+  </div>
 
 
 

@@ -36,7 +36,7 @@
                         <tr data-id="<%= item.id %>">
                             <td class="product-name">(<%= item.name %>) <%= item.description %></td>
                             <td class="product-qty"><%= item.quantity %></td>
-                            <td class="product-price" data-price="<%=(item.price * item.quantity).toFixed(2) %>">€<%=(item.price * item.quantity).toFixed(2) %></td>
+                            <td class="product-price" data-price="<%=parseFloat(item.total).toFixed(2) %>">€<%=parseFloat(item.total).toFixed(2)%></td>
                             <td>
                                 <div class="edit-buttons">
                                     <button type="button" class="quantity-btn quantity-decrease">−</button>
@@ -53,7 +53,8 @@
                 <% } %>                
                 <!-- Final Row (Total) --> 
                 <tr id="list-footer">
-                    <td colspan="5">Total: £0.00</td>
+                    <% const fullTotal = items.reduce((sum, item) => sum + parseFloat(item.total), 0); %>
+                    <td colspan="5">Total: €<%= fullTotal.toFixed(2) %></td>
                 </tr>
             </tbody>
         </table>
@@ -97,7 +98,6 @@
                         //Delete current row from DOM
                         row.remove();
                         //Update the total price
-                        table.append
                         updateTotal();
                     } catch (err) {
                         console.error("Failed to delete item:", err);
@@ -122,8 +122,17 @@
                     const response = await fetch(url, { method: "PUT" });
                     //Server response in JSON format
                     const item = await response.json();
+
+                    //Deletes the Front-end
+                    if(item.deleted) {
+                        const row = priceElement.closest("tr");
+                        row.remove();
+                        updateTotal();
+                        return;
+                    }
+
                     //Initialise a price
-                    const newPrice = item.price * item.quantity;
+                    const newPrice = parseFloat(item.total);
                     //Update Quantity
                     quantityElement.textContent = item.quantity;
                     //Update Price
