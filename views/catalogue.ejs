@@ -20,7 +20,7 @@
                     <!-- Search -->
                     <div class="filter-group">
                         <label for="search">Search</label>
-                        <input type="text" name="search" placeholder="<%= search ||  "Search products..."%>">
+                        <input type="text" name="search" value="<%= search ||  ""%>">
                     </div>
                     <!-- Select Dropdown -->
                     <div class="filter-group">
@@ -76,7 +76,7 @@
                     <div class="catalogue-card">
                         <!-- Image -->
                         <div class="card-image">
-                            <img class="product-image" src="https://picsum.photos/400/300" alt="<%= product.name %>"">
+                            <img class="product-image" src="https://picsum.photos/400/300" alt="<%= product.name %>" data-id="<%= product.id %>">
                         </div>
                         <!-- Description -->
                         <div class="card-content">
@@ -85,7 +85,7 @@
                             <!-- Price & Button -->
                             <div class="card-footer">
                                 <p class="card-price">€<%= product.price %></p>
-                                <button class="cardBTN" data-id="<%= product.id %>">Add to List</button>
+                                <button class="add-btn" data-id="<%= product.id %>">Add to List</button>
                             </div>
                         </div>
                     </div>
@@ -106,15 +106,14 @@
                         <button class="page-number">« Prev</buton>
                     </a>
                <% } %>
-
                <!-- Page Numbers -->
                <% for(let i=1; i <= totalPages; i++) { %>
                     <% if (i === currentPage) { %>
-                        <a href="?page=<%= i %>">
+                        <a href="?&page=<%= i %>">
                             <button class="page-number active"><%= i %></button>
                         </a>
                     <% } else { %>
-                        <a href="?page=<%= i %>">
+                        <a href="?&page=<%= i %>">
                             <button class="page-number"><%= i %></button>
                         </a>
                     <% } %>
@@ -123,7 +122,7 @@
                <!-- Next Page -->
                 <% if (currentPage < totalPages) { %>
                     <a href="?page=<%= currentPage + 1 %>">
-                        <button class="page-number">Next »</buton>
+                        <button class="page-number">Next »</button>
                     </a>
                <% } %>               
     
@@ -138,60 +137,19 @@
             <div class="modal-header">
                 <h2>Product</h2>
             </div>
-            <!-- Production Section 1 (original)-->
-            <div id="product-section-1" class="modal-section">
-                <!-- Image -->
-                <div><img id="product-image"src="https://picsum.photos/400/300" alt="Product image"></div>
-                <!-- Description -->
-                <div id="product-content">
-                    <!-- Title -->
-                    <h3 id="product-title">Item this is a very nice product 500ml and 600gb. What would you like?</h3>
-                    <!-- Description -->
-                    <p id="product-description">What to do?</p>
-                    <!-- Price & Button -->
-                    <div id="product-footer">
-                        <p id="product-price">€5.50</p>
-                        <button class="modal-btn">Add to List</button>
-                        <button id="compare-btn">Compare</button>
-                    </div>
-                </div>   
-            </div>
-            <!-- Production Section 2 -->
-            <div id="product-section-2" class="modal-section">
-                <!-- Image -->
-                <div><img id="product-image"src="https://picsum.photos/400/300" alt="Product image"></div>
-                <!-- Description -->
-                <div id="product-content">
-                    <!-- Title -->
-                    <h3 id="product-title">Item this is a very nice product 500ml and 600gb. What would you like?</h3>
-                    <!-- Description -->
-                    <p id="product-description">What to do?</p>
-                    <!-- Price & Button -->
-                    <div id="product-footer">
-                        <p id="product-price">€5.50</p>
-                        <button class="modal-btn">Add to List</button>
-                        <button id="compare-btn">Compare</button>
-                    </div>
-                </div>   
-            </div>            
-            <div>
-                <table>
-                    <thead>
-                        <th>Brand</th>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Compare</th>
-                    </thead>
-                </table>
-            </div>   
+            <!-- Product Modal Contents updated through fetch-->
+            <div id="modal-content"></div>   
             <!-- Modal Footer --> 
             <div class="modal-footer">
                 <button id="modal-close-btn">Close</button>
             </div>                       
         </div>
     </div>
+    <!-- Popup Alert -->
+     <div id="catalogue-alert">
+        <p id="catalogue-alert-msg"></p>
+     </div>
     <%- include("./partials/footer.ejs") %> 
-
     <script>
         //Wait for DOM to load
         document.addEventListener("DOMContentLoaded", () => {
@@ -201,7 +159,9 @@
             //Event delagation
             document.addEventListener("click", (e) => {
                 //Open the product modal
-                if(e.target.classList.contains("product-image")) {
+                if(e.target.classList.contains("product-image")) {   
+                    const id = e.target.dataset.id;
+                    loadModal(id);
                     modal.style.display = "block";
                 }
                 //Close the product modal
@@ -209,10 +169,16 @@
                     modal.style.display = "none";
                 }
                 //Add product to the list
-                if(e.target.classList.contains("cardBTN")) {
+                if(e.target.classList.contains("add-btn")) {
                     const productId = e.target.dataset.id;
                     //console.log("Clicked add button:", productId);
                     addProductToList(productId);
+                }
+                if(e.target.classList.contains("select-btn")) {
+                    document.getElementById("compare-name-2").textContent = e.target.dataset.name;
+                    document.getElementById("compare-desc-2").textContent = e.target.dataset.desc;
+                    document.getElementById("compare-price-2").textContent = `€${e.target.dataset.price}`;
+                    document.getElementById("compare-add-btn").dataset.id = e.target.dataset.id;                    
                 }
             });
         });
@@ -228,11 +194,37 @@
                     },
                     body: JSON.stringify({ id: productId })
                 });
+                //Parase product name from server response
+                const data = await response.json();
+                showAlert("Product added to the list");
                 console.log("Product added");
             }
             catch (err) {
+                showAlert("Failed to add list");
                 console.log("Add product failed: ", err);
             }
+        }
+
+        //Very weird process (Alfie emoji)
+        async function loadModal(id) {
+            try {
+                const response = await fetch(`/catalogue/${id}`);
+                const html = await response.text();
+                document.getElementById("modal-content").innerHTML = html;
+            }
+            catch (err) {
+                console.log("failed to load modal: ", err);
+            }
+        }
+
+        function showAlert(message) {
+            const alert = document.getElementById("catalogue-alert");
+            const msg   = document.getElementById("catalogue-alert-msg");
+
+            msg.textContent  = message;
+            alert.style.display = "block";
+
+            setTimeout(() => alert.style.display = "none", 3000);            
         }
     </script>
 
@@ -241,7 +233,7 @@
       <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
     </button>
 
-    <!--Calling JavaScript for Theme function 😺-->
+    <!--Calling JavaScript for Theme function (Alfie emoji)-->
     <script src="/js/theme.js"></script>
 
 </body>

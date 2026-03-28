@@ -5,7 +5,8 @@
 //Import 
 const { error } = require("console");
 const bcrypt = require("bcrypt");
-const { pool } = require("./db");
+const { pool } = require("./model/db");
+const productQuery = require("./public/js/queries");
 const express = require("express");
 //importing the express module
 const session = require('express-session')
@@ -16,8 +17,8 @@ const path = require("path");
 
 const { checkLoggedIn, bypassLogin, attachUserToLocals, createCaptcha, generateCaptchaValue} = require('./middlewares');
 const { start } = require("repl");
+const queries = require("./public/js/queries");
 //JSON path
-const basketPath = path.join(__dirname, "basket.json");
 const productPath = path.join(__dirname, "products.json");
 
 
@@ -70,7 +71,7 @@ app.get('/login', bypassLogin, createCaptcha, (request, response) => {
 //login post route to recieve the username and password from form
 app.post('/login', async (request, response) => {
   try {
-    const { username, password, captchaInput } = request.body;
+    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
 
     // Check captcha first
     if (!captchaInput || captchaInput.toUpperCase() !== request.session.captcha) {
@@ -115,11 +116,23 @@ app.post('/login', async (request, response) => {
       });
     }
 
+    
     // Store the logged in user details in the session so they remain authenticated
     request.session.user = {
       id: user.id,
-      username: user.username
+      firstName: user.first_name,
+      lastName: user.last_name,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      dob: user.dob,
+      password: user.password
     };
+
+    /*
+    //Alternative instead of manual mapping
+     request.session.user = user; //Doesn't take in firstname, lastname & password
+    */
 
     // Clear captcha after successful login
     request.session.captcha = null;
@@ -157,7 +170,7 @@ app.get("/register", bypassLogin, createCaptcha, (request, response) => {
 //Pulls in username and password to be validated
 app.post("/register", async (request, response) => {
   try {
-    const { username, password, captchaInput } = request.body;
+    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
 if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captcha) {
 
   const captcha = generateCaptchaValue();
@@ -175,18 +188,24 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
     }
     //Validates password is not less than 8 charachters 
        if (password.length < 8) {
-      return response.render("register", {
-        error: "Password must be at least 8 characters",
-        username
-      });
-    }
+  const captcha = generateCaptchaValue();
+  request.session.captcha = captcha;
+
+  return response.render("register", {
+    error: "Password must be at least 8 characters",
+    captcha
+  });
+}
     //this hashes the password using bcrypt 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // RETURNING id + username lets us auto-login immediately
     const result = await pool.query(
-      "INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username",
-      [username, hashedPassword]
+      `INSERT INTO users 
+      (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, username`,
+      [firstName, lastName, username, email, phone || null, dob || null, hashedPassword]
     );
 
     const user = result.rows[0];
@@ -216,136 +235,162 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 //Passing products into EJS (sample products)
 
 
+//Adding featured stores:
+const stores = [
+  {
+    name: "Tesco",
+    logo: "/img/tescoLogo.jpg",
+    url: "https://www.tesco.com/"
+  },
+  {
+    name: "SuperValu",
+    logo: "/img/supervaluLogo.webp",
+    url: ""
+  },
+  {
+    name: "Dunnes",
+    logo: "/img/dunnesLogo.webp",
+    url: "https://www.dunnesstoresgrocery.com/"
+  },
+  {
+    name: "Lidl",
+    logo: "/img/lidlLogo.png",
+    url: "https://www.lidl.com/"
+  }
 
-//app.get('/',checkLoggedIn,(request, response) =>{ //(use this in finished code!!!!!😺!!!!!)also for LOGOUT
-app.get('/', checkLoggedIn,(request, response) =>{
+];
 
-    const data = fs.readFileSync("./Products.json");
-    const products = JSON.parse(data);
-    response.render("index", { products, title: "Home", error: null})
+//Home Page
+app.get('/', checkLoggedIn, async (request, response) =>{
+  //OPEN CONNECTION
+  const client = await pool.connect();  
+  try {
+    //Query
+    const featuredProducts = await queries.getFeaturedProducts(client);
+    response.render("index", { products: featuredProducts, stores, title: "Home", error: null});
+  }
+  catch(err) {
+    console.error("Failed to delete item:", err);
+    response.status(500).json({ message: "Failed to delete item" });
 
-})
+  }
+  finally {
+    //END CONNECTION
+    client.release();       
+  }   
+});
 
 //This protects all the pages below from being accessed without a login 
 //app.use(checkLoggedIn);
 
-//Catalogue Page
-app.get("/catalogue", (request, response) => {
-  //Verify the product json file exists
-  const products = readJSON(productPath)
-  if(!products) {
-    return response.status(400).json({message: "Product JSON not found"});
-  }
-  
+//Catalogue Page (async necessary for database queries)
+app.get("/catalogue", async (request, response) => {  
   //Get the query parameters (https://www.youtube.com/watch?v=JcAgTtycZg0)
   const search = request.query.search || "";
   const sort = request.query.sort || "ascending";
   const categoryFilter = request.query.category || "";
   const currentPage = parseInt(request.query.page) || 1;
   const limit = 24;
-  
+  const offset =  (currentPage - 1) * limit;
 
-  //Search Query (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter)
-  let filteredProducts = products.filter(obj => obj.name.toLowerCase().includes(search.toLowerCase()));
-
-  //Filter by Category
-  if(categoryFilter) {
-    filteredProducts = filteredProducts.filter(obj => obj.category === categoryFilter)
+  //Sort parameters
+  const sortOptions = {
+    ascending: "name ASC",
+    descending: "name DESC",
+    lowPrice: "price ASC",
+    highPrice: "price DESC"
   }
-  
-  //Get all unique categories from product
-  const uniqueCategories = [];
-  products.forEach(product => {
-    if(!uniqueCategories.includes(product.category)) {
-      uniqueCategories.push(product.category);
-    }
-  });
+  const orderBy = sortOptions[sort] || "name ASC";
 
-  //Sort by Order (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
-  switch(sort) {
-    case "ascending":
-      filteredProducts.sort((product1,product2) => product1.name.localeCompare(product2.name));
-      break;
-    case "descending":
-      filteredProducts.sort((product1,product2) => product2.name.localeCompare(product1.name));
-      break;      
-    case "lowPrice":
-      filteredProducts.sort((product1, product2) => parseFloat(product1.price) - parseFloat(product2.price))
-      break;
-    case "highPrice":
-      filteredProducts.sort((product1, product2) => parseFloat(product2.price) - parseFloat(product1.price))
-      break;  
-    default:
-      //No sorting query parameter applied
-      break; 
+  //OPEN CONNECTION
+  const client = await pool.connect();
+  try {
+    //Search the products and total number of products
+    const {products, totalProducts} = await productQuery.getCatalogue(client, {
+      search, categoryFilter, orderBy, limit, offset
+    });
+    //Get the unique categories
+    const uniqueCategories = await productQuery.getUniqueCategories(client);
+
+    //Calculate total pages 
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    // console.log("Total products found:", totalProducts);
+    // console.log("Products returned:", productsResult.rows.length);
+    // console.log("Sample row:", productsResult.rows[0]);
+    // console.log("Where where?", whereClause);
+    // console.log("Values:", values); 
+
+    //Output
+    response.render("catalogue", {
+      title: "Catalogue",
+      products,
+      currentPage,
+      totalPages,
+      totalProducts,
+      search,
+      sort,
+      categoryFilter,
+      uniqueCategories,
+    });    
   }
-
-  //Pagination Logic (https://www.geeksforgeeks.org/node-js/pagination-using-node-mongo-express-js-and-ejs/)
-
-  const totalProducts = filteredProducts.length;
-  //Example: Divides 200 products by 24 while roudning it up to 9.
-  const totalPages = Math.ceil(totalProducts / limit);
-  //Calculates the product range
-  const startIndex = (currentPage - 1) * limit;
-  const endIndex = startIndex + limit;
-  //Extracts the products between the starting and ending index
-  const productPage = filteredProducts.slice(startIndex, endIndex);
-
-  response.render("catalogue", {
-    title: "Catalogue",
-    products: productPage,
-    currentPage,
-    totalPages,
-    totalProducts,
-    search,
-    sort,
-    categoryFilter,
-    uniqueCategories
-  });
+  catch(err) {
+    console.error("Failed to load products:", err);
+  }
+  finally {
+    //END CONNECTION
+    client.release();
+  }
 });
 
-app.post("/catalogue/add", (request, response) => {
+app.get("/catalogue/:id", async (request, response) => {
+  //Initialisation
+  const id = parseInt(request.params.id);
+  //const product = products.find(obj => obj.id === id);
+  //OPEN CONNECTION
+  const client = await pool.connect()
+  try {
+    //Query
+    const {product, filtered} = await queries.getComparison(client, id); 
+    //This is new 
+    //1. Updates the ejs variable tags during server-side
+    //2. Fetches HTTP response to insert the html text into the catalogue    
+    response.render("partials/product", {product, filtered});    
+  }
+  catch(err) {
+    console.error("Failed to load products in modal:", err);
+  } 
+  finally {
+    //END CONNECTION
+    client.release();   
+  }
+});
+
+app.post("/catalogue/add", async (request, response) => {
   //Initialisation
   const productId = Number(request.body.id);
-
-  //Verify the product json file exists
-  const products = readJSON(productPath)
-  if(!products) {
-    return response.status(400).json({message: "Product JSON not found"});
+  const userId = request.session.user.id;
+  //OPEN CONNECTION
+  const client = await pool.connect();
+  try {
+    //Query
+    const productResult = await client.query(`
+      SELECT name FROM products WHERE id = $1`,  
+      [productId]
+    );
+    await queries.addToShoppingList(client, {userId, productId});
+    
+    response.json({productName: productResult.rows[0].name});
+    
   }
-
-  //Verify the product id from the catalogue can be found in the json
-  const product = products.find(obj => obj.id === productId);
-  if(!product) {
-    return response.status(404).json({message: "Product ID not found"});
+  catch(err) {
+    console.error("Failed add products to the shopping list:", err);
+  } 
+  finally {
+    //END CONNECTION
+    client.release();  
   }
-
-  //Read basket json data or create a new one
-  let basket = readJSON(basketPath) || [];
-
-  //Check for any duplicate items
-  const existingItem = basket.find(obj => obj.id === productId);
-
-  //If duplicate item then update quantity, else create a new item
-  if(existingItem) {
-    existingItem.quantity += 1;
-  }
-  else {
-    basket.push({
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        quantity: 1
-    });
-  }
-  //Update the basket json
-  writeJSON(basketPath, basket);
-
-  //Important for the database stage
-  response.json({ message: "Product added", item: product });
 });
-
 
 
 //Contact Page
@@ -353,111 +398,186 @@ app.get("/contact", (request, response) => {
     response.render("contact", {title: "Contact"});
 });
 
-//Catalogue Page
-app.get("/about", (request, response) => {
-    response.render("about", {title: "About Us"});
-});
-
-//Stores Page
-app.get("/stores", (request, response) => {
-    response.render("stores", {title: "Stores"});
-});
-
 //Shopping List Page
-app.get("/list", (request, response) => {
-  const items = readJSON(basketPath);
-  response.render("list", { items, title: "Shopping List" });
-});
+app.get("/list", async (request, response) => {
+  //Initialisation
+  const userId = parseInt(request.session.user.id);
 
-app.put("/list/:id/increase", (request, response) => {
-  const result = findItemById(request, response);
-  if(!result) return
-
-  const {item, itemList } = result;
-  item.quantity++;
-  writeJSON(basketPath, itemList);
-  response.json(item);
-});
-
-app.put("/list/:id/decrease", (request, response) => {
-  const result = findItemById(request, response);
-  if(!result) return
-
-  // Prevent quantity from going below 1
-  const {item, itemList } = result;
-  if (item.quantity > 1) {
-    item.quantity--;
-    writeJSON(basketPath, itemList);
+  //OPEN CONNECTION
+  const client = await pool.connect();  
+  try {
+    //Query
+    const items = await queries.getShoppingList(client, userId);
+    //console.log("Sample item:", items[0]);
+    //Output
+    response.render("list", { items, title: "Shopping List" });
   }
-
-  response.json(item);
+  catch(err) {
+    console.error("Failed to get shopping list", err);
+  }
+  finally {
+    //END CONNECTION
+    client.release();       
+  }   
+ 
+  
 });
 
-app.delete("/list/:id/", (request, response) => {
-  const itemList = readJSON(basketPath);
-  const id = parseInt(request.params.id, 10);
-  // Filter out the deleted item
-  const updatedList = itemList.filter(obj => obj.id !== id);
-
-  writeJSON(basketPath, updatedList);
-  response.json({ success: true });
+app.put("/list/:id/increase", async (request, response) => {
+  const userId = parseInt(request.session.user.id);
+  const listId = parseInt(request.params.id);
+  //OPEN CONNECTION
+  const client = await pool.connect();  
+  try {
+    //Query
+    const result = await updateQuantity(client, userId, listId, 1);
+    if(!result) return response.status(404).json({message: "Item not found"});
+    response.json(result);
+  }
+  catch(err) {
+    console.error("Failed to increase quantity of the product", err);
+    response.status(500).json({ message: "Failed to increase quantity" });
+  }
+  finally {
+    //END CONNECTION
+    client.release();
+  }   
 });
 
-/*
+app.put("/list/:id/decrease", async (request, response) => {
+  const userId = parseInt(request.session.user.id);
+  const listId = parseInt(request.params.id);
+  //OPEN CONNECTION
+  const client = await pool.connect();  
+  try {
+    //Query
+    const result = await updateQuantity(client, userId, listId, -1);
+    if(!result) return response.status(404).json({message: "Item not found"});
+    response.json(result);
+  }
+  catch(err) {
+    console.error("Failed to decrease quantity of the product", err);
+    response.status(500).json({ message: "Failed to decrease quantity" });
+  }
+  finally {
+    //END CONNECTION
+    client.release();
+  }   
+});
+
+app.delete("/list/:id/", async (request, response) => {
+  const userId = parseInt(request.session.user.id);
+  const listId = parseInt(request.params.id);  
+
+  //OPEN CONNECTION
+  const client = await pool.connect();  
+  try {
+    //Query
+    await queries.removeFromShoppingList(client, {userId, listId});
+    response.json({sucess: true});
+  }
+  catch(err) {
+    console.error("Failed to delete item:", err);
+    response.status(500).json({ message: "Failed to delete item" });
+
+  }
+  finally {
+    //END CONNECTION
+    client.release();       
+  }   
+});
+
 //Profile Page
-app.get("/profile", checkLoggedIn, (request, response) => {
-    response.render("profile", {
-        title: "Profile",
-        user: request.session.user
-    });
+app.get("/profile", checkLoggedIn, async (request, response) => {
+  const userId = parseInt(request.session.user.id);
+  //OPEN CONNECTION
+  const user = {
+    firstName: request.session.user.firstName,
+    lastName: request.session.user.lastName,
+    username: request.session.user.username,
+    email: request.session.user.email,
+    phone: request.session.user.phone,
+    dob: request.session.user.password,
+    password: ""
+  };
+  // console.log(user.firstName);
+  response.render("profile", {
+    title: "Profile",
+    user
+  }); 
 });
-/*
 
-*/
-app.get("/profile", (request, response) => {
-    // For testing purposes, create a dummy user object
-    const dummyUser = {
-        username: "TestUser",
-        email: "testuser@example.com"
+//Updating profile info
+app.post('/profile/update', async (req, res) => {
+    const updatedUser = {
+        first_name: req.body.firstName,
+        last_name: req.body.lastName,
+        username: req.body.username,
+        email: req.body.email,
+        phone: req.body.phone,
+        date_of_birth: req.body.dob,
+        password_hash: await bcrypt.hash(req.body.password, 10),
+        id: req.session.user.id
     };
 
-    response.render("profile", {
-        title: "Profile",
-        user: dummyUser
-    });
+  //update DB or session
+  console.log(updatedUser);
+  //OPEN CONNECTION
+  const client = await pool.connect();  
+  try {
+    await client.query(`BEGIN`);
+    console.log("Transaction started");    
+    //Query
+    await queries.updateUser(client, updatedUser);
+    await client.query(`COMMIT`);
+    console.log("Transaction started");    
+    res.redirect('/profile');    
+  }
+  catch(err) {
+    await client.query(`ROLLBACK`);
+    console.log("Transaction started");    
+    console.error("Failed to update user information", err);
+    res.status(500).json({ message: "Failed to update user information" });
+
+  }
+  finally {
+    //END CONNECTION
+    client.release();       
+  }      
 });
 
-
 //Additional Functions
-function findItemById(request, response) {
-  const itemList = readJSON(basketPath);
-  const itemId = parseInt(request.params.id, 10);
-  const item = itemList.find(obj => obj.id === itemId);
+async function updateQuantity(client, userId, listId, value) {
+    //Fetch current quantity
+    const current = await client.query(`
+      SELECT quantity FROM lists
+      WHERE id = $1 AND user_id = $2`,
+      [listId, userId]
+    );
+    //Checkpoint 1: Prvent undefined
+    if (current.rows.length === 0) return null;
 
-  if(!item) {
-    return response.status(404).json({error: "Item not found"});
-  }
+    //Verify if the product should be deleted
+    const quantity = current.rows[0].quantity;
+    if(quantity + value <= 0) {
+      await queries.removeFromShoppingList(client, {userId, listId});
+      return {deleted: true};
+    }
 
-  return {item, itemList};
-} 
+    //Perform Additon/Subtraction
+    const newQuantity = quantity + value;
 
-function readJSON(filePath) {
-  if(!fs.existsSync(filePath)) return [];
-  try {
-    const data = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(data || "[]");
-  } 
-  catch (err) {
-    console.error("Error reading json file", err);
-    return [];
-  }
+    await queries.updateFromShoppingList(client, {userId, listId, quantity: newQuantity});
+    // Return updated item
+    const result = await client.query(`
+        SELECT l.id, p.name, l.quantity, (l.quantity * p.price)::numeric AS total
+        FROM lists l
+        JOIN products p ON l.product_id = p.id
+        WHERE l.user_id = $1 AND l.id = $2`,
+        [userId, listId]
+    );
+    //console.log("Result:", result.rows[0]);
+    return result.rows[0];
 }
 
-function writeJSON(filePath, items) {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
-  } 
-  catch(err) {
-    console.error("Error writing json file", err);
-  }
-}
+
