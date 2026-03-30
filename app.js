@@ -6,19 +6,13 @@
 const { error } = require("console");
 const bcrypt = require("bcrypt");
 const { pool } = require("./model/db");
-const productQuery = require("./public/js/queries");
 //importing the express module
 const session = require('express-session')
 const express = require("express");
-//Path
-const path = require("path");
 
-const { checkLoggedIn, bypassLogin, attachUserToLocals, createCaptcha, generateCaptchaValue} = require('./middlewares');
+const { checkLoggedIn, bypassLogin, attachUserToLocals, createCaptcha, regenerateCaptchaValue, validateCaptcha} = require('./middlewares');
 const { start } = require("repl");
 const queries = require("./public/js/queries");
-//JSON path
-const productPath = path.join(__dirname, "products.json");
-
 
 //Express App
 const app = express();
@@ -56,185 +50,6 @@ app.listen(3000);
 
 //Login Page
 
-// Route to display the login page, it redirects if the user is already logged in
-app.get('/login', bypassLogin, createCaptcha, (request, response) => {
-    let error = null;
-    if (request.query.error === "session-expired") {
-        error = "Your session has expired. Please log in again.";
-    }
-
-    response.render('login', { error, captcha: response.locals.captcha });
-});
-
-//login post route to recieve the username and password from form
-app.post('/login', async (request, response) => {
-  try {
-    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
-
-    // Check captcha first
-    if (!captchaInput || captchaInput.toUpperCase() !== request.session.captcha) {
-      const captcha = generateCaptchaValue();
-      request.session.captcha = captcha;
-
-      return response.render("login", {
-        error: "Incorrect captcha",
-        captcha
-      });
-    }
-
-    // Check if a user with the provided username exists in the database
-    const result = await pool.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
-    );
-
-    if (result.rows.length === 0) {
-      const captcha = generateCaptchaValue();
-      request.session.captcha = captcha;
-
-      return response.render("login", {
-        error: "Wrong credentials",
-        captcha
-      });
-    }
-
-    // Get the first user returned from the database query
-    const user = result.rows[0];
-
-    // Compare the entered password with the hashed password stored in the database
-    const match = await bcrypt.compare(password, user.password_hash);
-
-    if (!match) {
-      const captcha = generateCaptchaValue();
-      request.session.captcha = captcha;
-
-      return response.render("login", {
-        error: "Wrong credentials",
-        captcha
-      });
-    }
-
-    
-    // Store the logged in user details in the session so they remain authenticated
-    request.session.user = {
-      id: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      username: user.username,
-      email: user.email,
-      phone: user.phone,
-      dob: user.dob,
-      password: user.password
-    };
-
-    /*
-    //Alternative instead of manual mapping
-     request.session.user = user; //Doesn't take in firstname, lastname & password
-    */
-
-    // Clear captcha after successful login
-    request.session.captcha = null;
-
-    // Redirect to homepage after successful login
-    response.redirect("/");
-  } catch (err) {
-    console.error(err);
-
-    const captcha = generateCaptchaValue();
-    request.session.captcha = captcha;
-
-    response.render("login", {
-      error: "Server error",
-      captcha
-    });
-  }
-});
-// clear the user session upon logout 
-app.get('/logout', (request, response) => {
-    request.session.destroy()
-    response.clearCookie('manfra.io')
-    response.redirect('/')
-}
-)
-
-//Register Page
-app.get("/register", bypassLogin, createCaptcha, (request, response) => {
-  response.render("register", {
-    error: null,
-    captcha: response.locals.captcha
-  });
-});
-
-//Pulls in username and password to be validated
-app.post("/register", async (request, response) => {
-  const userInfo = request.body;
-  const regenerateCaptcha = () => {
-    const captcha = generateCaptchaValue();
-    request.session.captcha = captcha;
-    return captcha;
-  }
-
-  //Validate CAPTCHA
-  if (!userInfo.captchaInput || userInfo.captchaInput.trim().toUpperCase() !== request.session.captcha) {
-    return response.render("register", {
-      error: "Incorrect captcha",
-      captcha: regenerateCaptcha()
-    });
-  }
-
-  //If username and password are empty shows "Missing Fields"
-  if (!userInfo.username || !userInfo.password) {
-    return response.status(400).send("Missing fields");
-  }
-  //Validates password is not less than 8 charachters 
-  if (userInfo.password.length < 8) {
-    return response.render("register", {
-      error: "Password must be at least 8 characters",
-      captcha: regenerateCaptcha()
-    });
-  }
-
-  //OPEN CONNECTION
-  const client = await pool.connect();  
-  try {
-    //this hashes the password using bcrypt 
-    const hashedPassword = await bcrypt.hash(userInfo.password, 10);
-
-    // RETURNING id + username lets us auto-login immediately
-    const result = await queries.registerUser(client, userInfo, hashedPassword);
-
-    //  Auto-login: create session
-    request.session.user = {
-      id: result.id,
-      username: result.username,
-    };
-    //  Go straight to protected home page once registration credentials are correct(autologin)
-    response.redirect("/");
-  } 
-  catch (err) {
-    console.error("Registration error: ",err);
-    //"Username already exists" - does not register - does not autologin
-    if (err.code === "23505") {
-      return response.render("register", { 
-        error: "Username already exists",
-        captcha: regenerateCaptcha() 
-      });
-    }
-    // Handle unexpected server errors during registration
-    response.status(500).send("Error registering user");
-  }
-  finally {
-    //END CONNECTION
-    client.release();    
-  }
-});
-
-
-
-//configure the routes, creating a basic route like a home route 
-//Passing products into EJS (sample products)
-
-
 //Adding featured stores:
 const stores = [
   {
@@ -260,11 +75,161 @@ const stores = [
 
 ];
 
+
+// Route to display the login page, it redirects if the user is already logged in
+app.get('/login', bypassLogin, createCaptcha, (request, response) => {
+    let error = null;
+    if (request.query.error === "session-expired") {
+        error = "Your session has expired. Please log in again.";
+    }
+
+    response.render('login', { error, captcha: response.locals.captcha });
+});
+
+//login post route to recieve the username and password from form
+app.post('/login', validateCaptcha, async (request, response) => {
+  const userInfo = request.body;
+
+  try {
+    // OPEN CONNECTION
+    const client = await pool.connect();    
+    // Check if a user with the provided username exists in the database and return the user object
+    const user = await queries.getUser(client, userInfo.username);
+
+    // Compare the entered password with the hashed password stored in the database
+    const match = user && await bcrypt.compare(userInfo.password, user.password_hash);
+
+    //If user not found or password does not match, return an error
+    if (!match) {
+      return response.render("login", {
+        error: "Wrong credentials",
+        captcha: regenerateCaptchaValue(request)
+      });
+    }
+
+    // Store the logged in user details in the session so they remain authenticated
+    request.session.user = {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      dob: user.dob,
+      password: user.password
+    };
+
+    /*
+    //Alternative instead of manual mapping
+     request.session.user = user; //Doesn't take in firstname, lastname & password
+    */
+
+    // Clear captcha after successful login
+    request.session.captcha = null;
+
+    // Redirect to homepage after successful login
+    response.redirect("/");
+
+  } 
+  catch (err) {
+    console.error(err);
+    return response.render("login", {
+      error: "Server error",
+      captcha: regenerateCaptchaValue(request)
+    });
+  }
+  finally {
+    // END CONNECTION
+    client.release();
+  }
+});
+// clear the user session upon logout 
+app.get('/logout', (request, response) => {
+    request.session.destroy()
+    response.clearCookie('manfra.io')
+    response.redirect('/')
+}
+)
+
+//Register Page
+app.get("/register", bypassLogin, createCaptcha, (request, response) => {
+  response.render("register", {
+    error: null,
+    captcha: response.locals.captcha
+  });
+});
+
+//Pulls in username and password to be validated
+app.post("/register", validateCaptcha, async (request, response) => {
+  const userInfo = request.body;
+
+  //If username and password are empty shows "Missing Fields"
+  if (!userInfo.username || !userInfo.password) {
+    return response.status(400).send("Missing fields");
+  }
+  //Validates password is not less than 8 charachters 
+  if (userInfo.password.length < 8) {
+    return response.render("register", {
+      error: "Password must be at least 8 characters",
+      captcha: regenerateCaptchaValue(request)
+    });
+  }
+
+  try {
+    //OPEN CONNECTION
+    const client = await pool.connect();      
+    //this hashes the password using bcrypt 
+    const hashedPassword = await bcrypt.hash(userInfo.password, 10);
+
+    //Queries + Transaction
+    await client.query(`BEGIN`);
+    console.log("Transaction started");    
+    // RETURNING id + username lets us auto-login immediately
+    const result = await queries.registerUser(client, userInfo, hashedPassword);
+    await client.query(`COMMIT`);
+    console.log("Transaction committed");    
+
+    //  Auto-login: create session
+    request.session.user = {
+      id: result.id,
+      username: result.username,
+    };
+    //  Go straight to protected home page once registration credentials are correct(autologin)
+    response.redirect("/");
+  } 
+  catch (err) {
+    //Transaction
+    await client.query(`ROLLBACK`);
+    console.log("Transaction rolled back");  
+
+    console.error("Registration error: ",err);
+    //"Username already exists" - does not register - does not autologin
+    if (err.code === "23505") {
+      return response.render("register", { 
+        error: "Username already exists",
+        captcha: regenerateCaptchaValue(request) 
+      });
+    }
+    // Handle unexpected server errors during registration
+    response.status(500).send("Error registering user");
+  }
+  finally {
+    //END CONNECTION
+    client.release();    
+  }
+});
+
+
+
+//configure the routes, creating a basic route like a home route 
+//Passing products into EJS (sample products)
+
+
 //Home Page
 app.get('/', checkLoggedIn, async (request, response) =>{
-  //OPEN CONNECTION
-  const client = await pool.connect();  
   try {
+    //OPEN CONNECTION
+    const client = await pool.connect();      
     //Query
     const featuredProducts = await queries.getFeaturedProducts(client);
     response.render("index", { products: featuredProducts, stores, title: "Home", error: null});
@@ -302,9 +267,9 @@ app.get("/catalogue", async (request, response) => {
   }
   const orderBy = sortOptions[sort] || "name ASC";
 
-  //OPEN CONNECTION
-  const client = await pool.connect();
   try {
+    //OPEN CONNECTION
+    const client = await pool.connect();    
     //Search the products and total number of products
     const {products, totalProducts} = await productQuery.getCatalogue(client, {
       search, categoryFilter, orderBy, limit, offset
@@ -346,10 +311,10 @@ app.get("/catalogue", async (request, response) => {
 app.get("/catalogue/:id", async (request, response) => {
   //Initialisation
   const id = parseInt(request.params.id);
-  //const product = products.find(obj => obj.id === id);
-  //OPEN CONNECTION
-  const client = await pool.connect()
+
   try {
+    //OPEN CONNECTION
+    const client = await pool.connect()    
     //Query
     const {product, filtered} = await queries.getComparison(client, id); 
     //This is new 
@@ -370,20 +335,26 @@ app.post("/catalogue/add", async (request, response) => {
   //Initialisation
   const productId = Number(request.body.id);
   const userId = request.session.user.id;
-  //OPEN CONNECTION
-  const client = await pool.connect();
   try {
-    //Query
-    const productResult = await client.query(`
-      SELECT name FROM products WHERE id = $1`,  
-      [productId]
-    );
+    //OPEN CONNECTION
+    const client = await pool.connect();    
+
+    //Get Product information
+    const productResult = await queries.getProduct(client, productId);
+
+    //Query & Transaction
+    await client.query(`BEGIN`);
+    console.log("Transaction started");        
     await queries.addToShoppingList(client, {userId, productId});
+    await client.query(`COMMIT`);
+    console.log("Transaction committed");
     
-    response.json({productName: productResult.rows[0].name});
-    
+    //Pass Product Information
+    response.json({productName: productResult.name});
   }
   catch(err) {
+    await client.query(`ROLLBACK`);
+    console.log("Transaction rolled back");        
     console.error("Failed add products to the shopping list:", err);
   } 
   finally {
@@ -403,9 +374,9 @@ app.get("/list", async (request, response) => {
   //Initialisation
   const userId = parseInt(request.session.user.id);
 
-  //OPEN CONNECTION
-  const client = await pool.connect();  
   try {
+    //OPEN CONNECTION
+    const client = await pool.connect();      
     //Query
     const items = await queries.getShoppingList(client, userId);
     //console.log("Sample item:", items[0]);
@@ -419,22 +390,27 @@ app.get("/list", async (request, response) => {
     //END CONNECTION
     client.release();       
   }   
- 
-  
 });
 
 app.put("/list/:id/increase", async (request, response) => {
   const userId = parseInt(request.session.user.id);
   const listId = parseInt(request.params.id);
-  //OPEN CONNECTION
-  const client = await pool.connect();  
+
   try {
-    //Query
+    //OPEN CONNECTION
+    const client = await pool.connect();      
+    //Query & Transaction
+    await client.query(`BEGIN`);
+    console.log("Transaction started");        
     const result = await updateQuantity(client, userId, listId, 1);
+    await client.query(`COMMIT`);
+    console.log("Transaction committed");        
     if(!result) return response.status(404).json({message: "Item not found"});
     response.json(result);
   }
   catch(err) {
+    await client.query(`ROLLBACK`);
+    console.log("Transaction rolled back");        
     console.error("Failed to increase quantity of the product", err);
     response.status(500).json({ message: "Failed to increase quantity" });
   }
@@ -447,15 +423,22 @@ app.put("/list/:id/increase", async (request, response) => {
 app.put("/list/:id/decrease", async (request, response) => {
   const userId = parseInt(request.session.user.id);
   const listId = parseInt(request.params.id);
-  //OPEN CONNECTION
-  const client = await pool.connect();  
+
   try {
-    //Query
-    const result = await updateQuantity(client, userId, listId, -1);
-    if(!result) return response.status(404).json({message: "Item not found"});
+    //OPEN CONNECTION    
+    const client = await pool.connect();      
+    //Query & Transaction
+    await client.query(`BEGIN`);
+    console.log("Transaction started");        
+    const result = await updateQuantity(client, userId, listId, -1);    
+    await client.query(`COMMIT`);
+    console.log("Transaction committed");        
+    if(!result) return response.status(404).json({message: "Item not found"});    
     response.json(result);
   }
   catch(err) {
+    await client.query(`ROLLBACK`);
+    console.log("Transaction rolled back");        
     console.error("Failed to decrease quantity of the product", err);
     response.status(500).json({ message: "Failed to decrease quantity" });
   }
@@ -469,14 +452,20 @@ app.delete("/list/:id/", async (request, response) => {
   const userId = parseInt(request.session.user.id);
   const listId = parseInt(request.params.id);  
 
-  //OPEN CONNECTION
-  const client = await pool.connect();  
   try {
-    //Query
+    //OPEN CONNECTION
+    const client = await pool.connect();
+    //Query & Transaction
+    await client.query(`BEGIN`);
+    console.log("Transaction started");          
     await queries.removeFromShoppingList(client, {userId, listId});
-    response.json({sucess: true});
+    await client.query(`COMMIT`);
+    console.log("Transaction committed");    
+    response.json({success: true});
   }
   catch(err) {
+    await client.query(`ROLLBACK`);
+    console.log("Transaction rolled back");    
     console.error("Failed to delete item:", err);
     response.status(500).json({ message: "Failed to delete item" });
 
@@ -490,7 +479,6 @@ app.delete("/list/:id/", async (request, response) => {
 //Profile Page
 app.get("/profile", checkLoggedIn, async (request, response) => {
   const userId = parseInt(request.session.user.id);
-  //OPEN CONNECTION
   const user = {
     firstName: request.session.user.firstName,
     lastName: request.session.user.lastName,
@@ -508,37 +496,37 @@ app.get("/profile", checkLoggedIn, async (request, response) => {
 });
 
 //Updating profile info
-app.post('/profile/update', async (req, res) => {
-    const updatedUser = {
-        first_name: req.body.firstName,
-        last_name: req.body.lastName,
-        username: req.body.username,
-        email: req.body.email,
-        phone: req.body.phone,
-        date_of_birth: req.body.dob,
-        password_hash: await bcrypt.hash(req.body.password, 10),
-        id: req.session.user.id
-    };
+app.post('/profile/update', async (request, response) => {
+  const updatedUser = {
+      first_name: request.body.firstName,
+      last_name: request.body.lastName,
+      username: request.body.username,
+      email: request.body.email,
+      phone: request.body.phone,
+      date_of_birth: request.body.dob,
+      password_hash: await bcrypt.hash(request.body.password, 10),
+      id: request.session.user.id
+  };
 
   //update DB or session
-  console.log(updatedUser);
-  //OPEN CONNECTION
-  const client = await pool.connect();  
+  console.log(updatedUser);  
   try {
+    //OPEN CONNECTION
+    const client = await pool.connect();   
+    //TRANSACTION 
     await client.query(`BEGIN`);
     console.log("Transaction started");    
-    //Query
     await queries.updateUser(client, updatedUser);
     await client.query(`COMMIT`);
-    console.log("Transaction started");    
-    res.redirect('/profile');    
+    console.log("Transaction committed");    
+    response.redirect('/profile');    
   }
   catch(err) {
+    //TRANSACTION & Errors
     await client.query(`ROLLBACK`);
-    console.log("Transaction started");    
+    console.log("Transaction rolled back");    
     console.error("Failed to update user information", err);
-    res.status(500).json({ message: "Failed to update user information" });
-
+    response.status(500).json({ message: "Failed to update user information" });
   }
   finally {
     //END CONNECTION
@@ -548,36 +536,25 @@ app.post('/profile/update', async (req, res) => {
 
 //Additional Functions
 async function updateQuantity(client, userId, listId, value) {
-    //Fetch current quantity
-    const current = await client.query(`
-      SELECT quantity FROM lists
-      WHERE id = $1 AND user_id = $2`,
-      [listId, userId]
-    );
-    //Checkpoint 1: Prvent undefined
-    if (current.rows.length === 0) return null;
+  //Fetch current quantity
+  const current =  await queries.getQuantity(client, {listId, userId});
 
-    //Verify if the product should be deleted
-    const quantity = current.rows[0].quantity;
-    if(quantity + value <= 0) {
-      await queries.removeFromShoppingList(client, {userId, listId});
-      return {deleted: true};
-    }
+  //Checkpoint 1: Prvent undefined
+  if (!current) return null;
 
-    //Perform Additon/Subtraction
-    const newQuantity = quantity + value;
+  //Verify if the product should be deleted
+  const quantity = current.quantity;
+  if(quantity + value <= 0) {
+    await queries.removeFromShoppingList(client, {userId, listId});
+    return {deleted: true};
+  }
 
-    await queries.updateFromShoppingList(client, {userId, listId, quantity: newQuantity});
-    // Return updated item
-    const result = await client.query(`
-        SELECT l.id, p.name, l.quantity, (l.quantity * p.price)::numeric AS total
-        FROM lists l
-        JOIN products p ON l.product_id = p.id
-        WHERE l.user_id = $1 AND l.id = $2`,
-        [userId, listId]
-    );
-    //console.log("Result:", result.rows[0]);
-    return result.rows[0];
+  //Perform Additon/Subtraction
+  const newQuantity = quantity + value;
+  await queries.updateFromShoppingList(client, {userId, listId, quantity: newQuantity});
+
+  // Return updated item
+  return await queries.getItem(client, {userId, listId});
 }
 
 
