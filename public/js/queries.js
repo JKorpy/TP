@@ -52,6 +52,16 @@ const queries = {
         `);    
     },      
     
+    registerUser: async (client, userInfo, hashedPassword) => {
+        const result = await pool.query(
+            `INSERT INTO users 
+            (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING id, username`,
+            [userInfo.firstName, userInfo.lastName, userInfo.username, userInfo.email, userInfo.phone || null, userInfo.dob || null, hashedPassword]
+        );        
+        return result.rows[0];
+    },
     
 
     //Get all products

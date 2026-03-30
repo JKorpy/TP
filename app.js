@@ -7,11 +7,9 @@ const { error } = require("console");
 const bcrypt = require("bcrypt");
 const { pool } = require("./model/db");
 const productQuery = require("./public/js/queries");
-const express = require("express");
 //importing the express module
 const session = require('express-session')
-//using fs to dynamically read data from products JSON file
-const fs = require("fs");
+const express = require("express");
 //Path
 const path = require("path");
 
@@ -169,63 +167,65 @@ app.get("/register", bypassLogin, createCaptcha, (request, response) => {
 
 //Pulls in username and password to be validated
 app.post("/register", async (request, response) => {
+  const userInfo = request.body;
+  const regenerateCaptcha = () => {
+    const captcha = generateCaptchaValue();
+    request.session.captcha = captcha;
+    return captcha;
+  }
+
+  //Validate CAPTCHA
+  if (!userInfo.captchaInput || userInfo.captchaInput.trim().toUpperCase() !== request.session.captcha) {
+    return response.render("register", {
+      error: "Incorrect captcha",
+      captcha: regenerateCaptcha()
+    });
+  }
+
+  //If username and password are empty shows "Missing Fields"
+  if (!userInfo.username || !userInfo.password) {
+    return response.status(400).send("Missing fields");
+  }
+  //Validates password is not less than 8 charachters 
+  if (userInfo.password.length < 8) {
+    return response.render("register", {
+      error: "Password must be at least 8 characters",
+      captcha: regenerateCaptcha()
+    });
+  }
+
+  //OPEN CONNECTION
+  const client = await pool.connect();  
   try {
-    const { firstName, lastName, username, email, phone, dob, password, confirmPassword, captchaInput } = request.body;
-if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captcha) {
-
-  const captcha = generateCaptchaValue();
-  request.session.captcha = captcha;
-
-  return response.render("register", {
-    error: "Incorrect captcha",
-    captcha
-  });
-}
-
-//If username and password are empty shows "Missing Fields"
-    if (!username || !password) {
-      return response.status(400).send("Missing fields");
-    }
-    //Validates password is not less than 8 charachters 
-       if (password.length < 8) {
-  const captcha = generateCaptchaValue();
-  request.session.captcha = captcha;
-
-  return response.render("register", {
-    error: "Password must be at least 8 characters",
-    captcha
-  });
-}
     //this hashes the password using bcrypt 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(userInfo.password, 10);
 
     // RETURNING id + username lets us auto-login immediately
-    const result = await pool.query(
-      `INSERT INTO users 
-      (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING id, username`,
-      [firstName, lastName, username, email, phone || null, dob || null, hashedPassword]
-    );
-
-    const user = result.rows[0];
+    const result = await queries.registerUser(client, userInfo, hashedPassword);
 
     //  Auto-login: create session
     request.session.user = {
-      id: user.id,
-      username: user.username,
+      id: result.id,
+      username: result.username,
     };
-
     //  Go straight to protected home page once registration credentials are correct(autologin)
     response.redirect("/");
-  } catch (err) {
-    console.error(err);
-//"Username already exists" - does not register - does not autologin
+  } 
+  catch (err) {
+    console.error("Registration error: ",err);
+    //"Username already exists" - does not register - does not autologin
     if (err.code === "23505") {
-      return response.render("register", { error: "Username already exists" });
+      return response.render("register", { 
+        error: "Username already exists",
+        captcha: regenerateCaptcha() 
+      });
     }
- // Handle unexpected server errors during registration
+    // Handle unexpected server errors during registration
     response.status(500).send("Error registering user");
+  }
+  finally {
+    //END CONNECTION
+    client.release();    
   }
 });
 
@@ -245,7 +245,7 @@ const stores = [
   {
     name: "SuperValu",
     logo: "/img/supervaluLogo.webp",
-    url: ""
+    url: "https://supervalu.ie/"
   },
   {
     name: "Dunnes",
