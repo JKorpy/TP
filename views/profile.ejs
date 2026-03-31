@@ -16,8 +16,20 @@
         <img src="/img/profile_svg.svg" alt="User Avatar">
         </div>
 
+        <h1>Welcome <%- user.firstName %>!</h1>
+
         <div class="profile-info">
-          <form id="profileForm">
+          <form id="profileForm" action="/profile/update" method="POST">
+
+            <div class="profile-field">
+              <label>First Name</label>
+              <input type="text" name="firstName" class="profile-input" value="<%= user.firstName  %>" disabled>
+            </div>
+
+            <div class="profile-field">
+              <label>Last Name</label>
+              <input type="text" name="lastName" class="profile-input" value="<%= user.lastName %>" disabled>
+            </div>
 
             <div class="profile-field">
               <label>Username</label>
@@ -29,6 +41,21 @@
               <input type="email" name="email" class="profile-input" value="<%= user.email %>" disabled>
             </div>
 
+            <div class="profile-field">
+              <label>Phone Number</label>
+              <input type="number" name="phone" class="profile-input" value="<%= user.phone %>" disabled>
+            </div>
+
+            <div class="profile-field">
+              <label>Date of Birth</label>
+              <input type="date" name="dob" class="profile-input" value="<%= user.dob %>" disabled>
+            </div>
+
+            <div class="profile-field">
+              <label>New Password</label>
+              <input type="password" name="password" class="profile-input" value="<%= user.password %>" disabled>
+            </div>
+
             <button type="button" id="editProfileBtn" class="btn">Update Profile</button>
 
           </form>
@@ -38,16 +65,6 @@
     </div>
 
     </div>
-
-    <script>
-    const editBtn = document.getElementById('editProfileBtn');
-    const inputs = document.querySelectorAll('#profileForm input');
-
-    editBtn.addEventListener('click', () => {
-    inputs.forEach(input => input.disabled = !input.disabled);
-    editBtn.textContent = inputs[0].disabled ? 'Update Profile' : 'Save Changes';
-    });
-    </script>
 
 
   <%- include("./partials/footer.ejs") %>
