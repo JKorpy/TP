@@ -52,6 +52,16 @@ const queries = {
         `);    
     },      
     
+    registerUser: async (client, userInfo, hashedPassword) => {
+        const result = await pool.query(
+            `INSERT INTO users 
+            (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING id, username`,
+            [userInfo.firstName, userInfo.lastName, userInfo.username, userInfo.email, userInfo.phone || null, userInfo.dob || null, hashedPassword]
+        );        
+        return result.rows[0];
+    },
     
 
     //Get all products
@@ -74,6 +84,13 @@ const queries = {
     // ######################
     //  Catalogue Page 
     // ######################        
+    getProduct: async (client, productId) => {
+        const result = await client.query(`
+        SELECT name FROM products WHERE id = $1`,  
+        [productId]
+        );
+        return result.rows[0];
+    },
 
     //Get products for comparison
     getComparedProducts: async (client, product) => {
@@ -210,6 +227,26 @@ const queries = {
             [quantity, userId, listId]
         );
     },
+
+    getQuantity: async(client, {listId, userId}) => {
+        const result = await client.query(`
+            SELECT quantity FROM lists
+            WHERE id = $1 AND user_id = $2`,
+            [listId, userId]
+        );
+        return result.rows[0];
+    },
+
+    getItem: async(client, {userId, listId}) => {
+        const result = await client.query(`
+            SELECT l.id, p.name, l.quantity, (l.quantity * p.price)::numeric AS total
+            FROM lists l
+            JOIN products p ON l.product_id = p.id
+            WHERE l.user_id = $1 AND l.id = $2`,
+            [userId, listId]
+        );       
+        return result.rows[0]; 
+    },    
     
     // ######################
     //  Home Page 
@@ -226,12 +263,12 @@ const queries = {
     // ######################
     //  Login Page 
     // ######################
-    getUser: async (client, userId) => {
+    getUser: async (client, username) => {
         const result = await client.query(
-            "SELECT * FROM users WHERE id = $1",
-            [userId]
+            "SELECT * FROM users WHERE username = $1",
+            [username]
         );        
-        return result.rows[0];
+        return result.rows[0] || null;
     },
 
     // ######################
@@ -239,25 +276,25 @@ const queries = {
     // ######################
     updateUser: async(client, updatedUser) => {
         await client.query(`
-        UPDATE users
-        SET first_name = $1,
-            last_name = $2,
-            username = $3,
-            email = $4,
-            phone = $5,
-            date_of_birth = $6,
-            password_hash = $7
-        WHERE id = $8`,
-        [
-            updatedUser.first_name,
-            updatedUser.last_name,
-            updatedUser.username,
-            updatedUser.email,
-            updatedUser.phone,
-            updatedUser.date_of_birth,
-            updatedUser.password_hash,
-            updatedUser.id            
-        ]
+            UPDATE users
+            SET first_name = $1,
+                last_name = $2,
+                username = $3,
+                email = $4,
+                phone = $5,
+                date_of_birth = $6,
+                password_hash = $7
+            WHERE id = $8`,
+            [
+                updatedUser.first_name,
+                updatedUser.last_name,
+                updatedUser.username,
+                updatedUser.email,
+                updatedUser.phone,
+                updatedUser.date_of_birth,
+                updatedUser.password_hash,
+                updatedUser.id            
+            ]
         );
     },
 }
