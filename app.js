@@ -90,9 +90,10 @@ app.get('/login', bypassLogin, createCaptcha, (request, response) => {
 app.post('/login', validateCaptcha, async (request, response) => {
   const userInfo = request.body;
 
-  try {
-    // OPEN CONNECTION
-    const client = await pool.connect();    
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect(); 
     // Check if a user with the provided username exists in the database and return the user object
     const user = await queries.getUser(client, userInfo.username);
 
@@ -175,9 +176,10 @@ app.post("/register", validateCaptcha, async (request, response) => {
     });
   }
 
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();      
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect(); 
     //this hashes the password using bcrypt 
     const hashedPassword = await bcrypt.hash(userInfo.password, 10);
 
@@ -227,9 +229,10 @@ app.post("/register", validateCaptcha, async (request, response) => {
 
 //Home Page
 app.get('/', checkLoggedIn, async (request, response) =>{
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();      
+  let client  = null;  
+  try {    
+    //OPEN CONNECTION 
+    client = await pool.connect();
     //Query
     const featuredProducts = await queries.getFeaturedProducts(client);
     response.render("index", { products: featuredProducts, stores, title: "Home", error: null});
@@ -246,10 +249,10 @@ app.get('/', checkLoggedIn, async (request, response) =>{
 });
 
 //This protects all the pages below from being accessed without a login 
-//app.use(checkLoggedIn);
+app.use(checkLoggedIn);
 
 //Catalogue Page (async necessary for database queries)
-app.get("/catalogue", async (request, response) => {  
+app.get("/catalogue", checkLoggedIn, async (request, response) => {  
   //Get the query parameters (https://www.youtube.com/watch?v=JcAgTtycZg0)
   const search = request.query.search || "";
   const sort = request.query.sort || "ascending";
@@ -267,15 +270,16 @@ app.get("/catalogue", async (request, response) => {
   }
   const orderBy = sortOptions[sort] || "name ASC";
 
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();    
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect();    
     //Search the products and total number of products
-    const {products, totalProducts} = await productQuery.getCatalogue(client, {
+    const {products, totalProducts} = await queries.getCatalogue(client, {
       search, categoryFilter, orderBy, limit, offset
     });
     //Get the unique categories
-    const uniqueCategories = await productQuery.getUniqueCategories(client);
+    const uniqueCategories = await queries.getUniqueCategories(client);
 
     //Calculate total pages 
     const totalPages = Math.ceil(totalProducts / limit);
@@ -308,13 +312,14 @@ app.get("/catalogue", async (request, response) => {
   }
 });
 
-app.get("/catalogue/:id", async (request, response) => {
+app.get("/catalogue/:id", checkLoggedIn, async (request, response) => {
   //Initialisation
   const id = parseInt(request.params.id);
 
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect()    
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect(); 
     //Query
     const {product, filtered} = await queries.getComparison(client, id); 
     //This is new 
@@ -331,13 +336,15 @@ app.get("/catalogue/:id", async (request, response) => {
   }
 });
 
-app.post("/catalogue/add", async (request, response) => {
+app.post("/catalogue/add", checkLoggedIn, async (request, response) => {
   //Initialisation
   const productId = Number(request.body.id);
   const userId = request.session.user.id;
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();    
+
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect();    
 
     //Get Product information
     const productResult = await queries.getProduct(client, productId);
@@ -365,18 +372,19 @@ app.post("/catalogue/add", async (request, response) => {
 
 
 //Contact Page
-app.get("/contact", (request, response) => {
+app.get("/contact", checkLoggedIn, (request, response) => {
     response.render("contact", {title: "Contact"});
 });
 
 //Shopping List Page
-app.get("/list", async (request, response) => {
+app.get("/list", checkLoggedIn, async (request, response) => {
   //Initialisation
   const userId = parseInt(request.session.user.id);
 
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();      
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect();   
     //Query
     const items = await queries.getShoppingList(client, userId);
     //console.log("Sample item:", items[0]);
@@ -392,13 +400,14 @@ app.get("/list", async (request, response) => {
   }   
 });
 
-app.put("/list/:id/increase", async (request, response) => {
+app.put("/list/:id/increase", checkLoggedIn, async (request, response) => {
   const userId = parseInt(request.session.user.id);
   const listId = parseInt(request.params.id);
 
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();      
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect();      
     //Query & Transaction
     await client.query(`BEGIN`);
     console.log("Transaction started");        
@@ -420,13 +429,14 @@ app.put("/list/:id/increase", async (request, response) => {
   }   
 });
 
-app.put("/list/:id/decrease", async (request, response) => {
+app.put("/list/:id/decrease", checkLoggedIn, async (request, response) => {
   const userId = parseInt(request.session.user.id);
   const listId = parseInt(request.params.id);
 
-  try {
+  let client  = null;  
+  try {  
     //OPEN CONNECTION    
-    const client = await pool.connect();      
+    client = await pool.connect(); ;      
     //Query & Transaction
     await client.query(`BEGIN`);
     console.log("Transaction started");        
@@ -448,13 +458,14 @@ app.put("/list/:id/decrease", async (request, response) => {
   }   
 });
 
-app.delete("/list/:id/", async (request, response) => {
+app.delete("/list/:id/", checkLoggedIn, async (request, response) => {
   const userId = parseInt(request.session.user.id);
   const listId = parseInt(request.params.id);  
 
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect(); 
     //Query & Transaction
     await client.query(`BEGIN`);
     console.log("Transaction started");          
@@ -496,7 +507,7 @@ app.get("/profile", checkLoggedIn, async (request, response) => {
 });
 
 //Updating profile info
-app.post('/profile/update', async (request, response) => {
+app.post('/profile/update', checkLoggedIn, async (request, response) => {
   const updatedUser = {
       first_name: request.body.firstName,
       last_name: request.body.lastName,
@@ -509,10 +520,12 @@ app.post('/profile/update', async (request, response) => {
   };
 
   //update DB or session
-  console.log(updatedUser);  
-  try {
-    //OPEN CONNECTION
-    const client = await pool.connect();   
+  console.log(updatedUser); 
+
+  let client  = null;  
+  try {  
+    //OPEN CONNECTION    
+    client = await pool.connect();    
     //TRANSACTION 
     await client.query(`BEGIN`);
     console.log("Transaction started");    
