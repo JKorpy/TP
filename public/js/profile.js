@@ -1,8 +1,18 @@
 //PROFILE FORM
 const editBtn = document.getElementById('editProfileBtn');
+const form = document.getElementById('profileForm');
 const inputs = document.querySelectorAll('#profileForm input');
 
+let editing = false;
+
 editBtn.addEventListener('click', () => {
-    inputs.forEach(input => input.disabled = !input.disabled); // toggle editable
-    editBtn.textContent = inputs[0].disabled ? 'Update Profile' : 'Save Changes';
+    if (!editing) {
+        //Enable editing
+        inputs.forEach(input => input.disabled = false);
+        editBtn.textContent = 'Save Changes';
+        editing = true;
+    } else {
+        //Submit form
+        form.submit();
+    }
 });
