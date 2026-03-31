@@ -202,34 +202,10 @@ app.post("/register", validateCaptcha, async (request, response) => {
     });
   }
 
-<<<<<<< HEAD
-  return response.render("register", {
-    error: "Incorrect captcha",
-    captcha
-  });
-}
-
-//If username and password are empty shows "Missing Fields"
-    if (!username || !password) {
-      return response.status(400).send("Missing fields");
-
-  }
-    //Validates password is not less than 8 charachters 
-       if (password.length < 8) {
-  const captcha = generateCaptchaValue();
-  request.session.captcha = captcha;
-
-  return response.render("register", {
-    error: "Password must be at least 8 characters",
-    captcha
-  });
-}
-=======
   let client  = null;  
   try {  
     //OPEN CONNECTION    
     client = await pool.connect(); 
->>>>>>> 6b1f4ab7f3c6316151c5170bb7b6b72db58417ca
     //this hashes the password using bcrypt 
     const hashedPassword = await bcrypt.hash(userInfo.password, 10);
 
