@@ -26,16 +26,37 @@ const app = express();
 //View Engine
 app.set("view engine", "ejs");
 
-
 //Middleware for static files
 //Parse JSON data
 app.use(express.json());
 //Use static files in public folder
 app.use(express.static("public"));
+
 //default set to true so set to false to use library querystring
 app.use(express.urlencoded({ extended: false }));
 
+(async () => {
+  try {
+    const res = await pool.query(`
+      SELECT table_schema, table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+      AND table_name = 'products';
+    `);
 
+    console.log("Table check result:", res.rows);
+  } catch (err) {
+    console.error("Error checking table:", err);
+  }
+})();
+(async () => {
+  try {
+    const res = await pool.query("SELECT current_database(), inet_server_addr(), inet_server_port()");
+    console.log("Node DB:", res.rows[0]);
+  } catch (err) {
+    console.error(err);
+  }
+})();
 // Configures session middleware for the application.
 // Creates a signed session cookie containing a session ID.
 // Session data is stored server-side and expires after 10 seconds.
