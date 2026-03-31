@@ -122,6 +122,7 @@
                     const response = await fetch(url, { method: "PUT" });
                     //Server response in JSON format
                     const item = await response.json();
+                    console.log(item);
 
                     //Deletes the Front-end
                     if(item.deleted) {
