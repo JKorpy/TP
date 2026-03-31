@@ -136,6 +136,9 @@ app.post('/login', async (request, response) => {
       });
     }
 
+
+
+    
     // Store the logged in user details in the session so they remain authenticated
     request.session.user = {
       id: user.id,
@@ -175,6 +178,8 @@ app.get("/register", bypassLogin, createCaptcha, (request, response) => {
   });
 });
 
+
+
 //Pulls in username and password to be validated
 app.post("/register", async (request, response) => {
   try {
@@ -193,7 +198,8 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
 //If username and password are empty shows "Missing Fields"
     if (!username || !password) {
       return response.status(400).send("Missing fields");
-    }
+
+  }
     //Validates password is not less than 8 charachters 
        if (password.length < 8) {
   const captcha = generateCaptchaValue();
