@@ -979,25 +979,43 @@ footer {
 /*------------------------------------*\
  .login
 \*------------------------------------*/
-.logo{
-    width: 40px;
-    height: 10px;
+body.login-page {
+    background-image: url("https://images.unsplash.com/photo-1557683316-973673baf926");
+    background-size: cover;
+    background-position: center;
+    background: linear-gradient(135deg, #dcc0b1, #c9ad9c);
+    min-height: 100vh;
 }
-.login-icon{
-    font-size:28px;
+
+.login-page .login-container {
+    min-height: 100vh;
 }
-.register-icon{
-    font-size:18px;
+
+.login-page .login-card {
+    max-width: 420px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 15px;
 }
-.form-control{
-    border-radius:10px;
-    padding:8px 10px;
-    font-size:14px;
+
+.login-page .form-control {
+    border-radius: 10px;
 }
-.btn-primary{
-    border-radius:10px;
-    padding:8px;
-    font-weight:500;
+
+.login-page .btn-primary {
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.login-page .login-icon {
+    font-size: 40px;
+}
+
+.login-page .captcha-box {
+    letter-spacing: 4px;
 }
 /*------------------------------------*\
   #Biblography
