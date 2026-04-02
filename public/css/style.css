@@ -1018,6 +1018,70 @@ body.login-page {
     letter-spacing: 4px;
 }
 /*------------------------------------*\
+ .Registration
+\*------------------------------------*/
+
+/*------------------------------------*\
+  #REGISTER PAGE
+\*------------------------------------*/
+
+body.register-page {
+    background: linear-gradient(135deg, #dcc0b1, #c9ad9c);
+    min-height: 100vh;
+}
+
+.register-page .register-container {
+    min-height: 100vh;
+}
+
+.register-page .register-card {
+    max-width: 650px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 18px;
+}
+
+.register-page .form-control {
+    border-radius: 10px;
+    border: 1px solid #d6b8a6;
+}
+
+.register-page .form-control:focus {
+    border-color: #c8a691;
+    box-shadow: 0 0 5px rgba(200, 166, 145, 0.6);
+}
+
+.register-page .btn-primary {
+    background: linear-gradient(135deg, #d6b8a6, #c8a691);
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.register-page .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.register-page .login-icon {
+    font-size: 40px;
+}
+
+.register-page .register-title {
+    color: #6b4f3f;
+}
+
+.register-page .register-link {
+    color: #b08968;
+}
+
+.register-page .captcha-box {
+    letter-spacing: 4px;
+}
+/*------------------------------------*\
   #Biblography
 \*------------------------------------*/
 /*
