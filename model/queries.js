@@ -289,7 +289,17 @@ const queries = {
     // ######################
     //  Profile Page 
     // ######################
-    updateUser: async(client, updatedUser) => {
+   getUserById: async (client, id) => {
+    const result = await client.query(
+        "SELECT * FROM users WHERE id = $1",
+        [id]
+    );
+    return result.rows[0] || null;
+},
+   updateUser: async (client, updatedUser) => {
+
+    if (updatedUser.password_hash) {
+        // WITH password update
         await client.query(`
             UPDATE users
             SET first_name = $1,
@@ -308,10 +318,31 @@ const queries = {
                 updatedUser.phone,
                 updatedUser.date_of_birth,
                 updatedUser.password_hash,
-                updatedUser.id            
+                updatedUser.id
             ]
         );
-    },
+    } else {
+        // WITHOUT password update
+        await client.query(`
+            UPDATE users
+            SET first_name = $1,
+                last_name = $2,
+                username = $3,
+                email = $4,
+                phone = $5,
+                date_of_birth = $6
+            WHERE id = $7`,
+            [
+                updatedUser.first_name,
+                updatedUser.last_name,
+                updatedUser.username,
+                updatedUser.email,
+                updatedUser.phone,
+                updatedUser.date_of_birth,
+                updatedUser.id
+            ]
+        );
+    }
 }
-
+}
 module.exports = queries;
