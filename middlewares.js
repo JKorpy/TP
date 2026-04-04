@@ -31,20 +31,8 @@ exports.bypassLogin = (request, response, next) => {
     }
 } 
 
-//for captcha generate
-function generateCaptcha(length = 5) {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let result = "";
-
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    return result;
-}
-
 exports.createCaptcha = (req, res, next) => {
-    const captcha = generateCaptcha();
+    const captcha = exports.generateCaptchaValue();
 
     req.session.captcha = captcha;
     res.locals.captcha = captcha;
@@ -71,7 +59,7 @@ exports.regenerateCaptchaValue = (request) => {
 
 exports.validateCaptcha = (request, response, next) => {
     const { captchaInput } = request.body;
-    const isValid = captchaInput || captchaInput.trim.toUpperCase !== request.session.captcha;
+    const isValid = captchaInput && captchaInput.trim().toUpperCase() === request.session.captcha;
 
     //Dynamically adds login or reigster to the render by removing "/" from path
     const view = request.path.slice(1);
