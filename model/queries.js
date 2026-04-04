@@ -1,4 +1,4 @@
-const { pool } = require("../../model/db");
+const { pool } = require("./db");
 
 //https://node-postgres.com/apis/result
 
@@ -53,7 +53,7 @@ const queries = {
     },      
     
     registerUser: async (client, userInfo, hashedPassword) => {
-        const result = await pool.query(
+        const result = await client.query(
             `INSERT INTO users 
             (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
             VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -127,23 +127,38 @@ const queries = {
 
     //get catalogue
     getCatalogue: async (client ,{search, categoryFilter, orderBy, limit, offset}) => {
-        //Dynamic WHERE clause
-        const conditions = [`name LIKE $1`];
-        const values = [`%${search}%`];        
-        
-        //Add category as an extra condition
-        //values = [`%%`, `Food`], $values.length = $2
+
+        const conditions = [];
+        const values = [];
+
+        // Full Text Search: (https://www.postgresql.org/docs/current/textsearch-intro.html)
+        // to_tsvector('english', name || ' ' || description
+        //      - Converts the concatenated text into searchable tokens e.g 'coffe'
+        // to_tsquery('english', $1)
+        //      - Converts the search term into a query
+        // @@
+        //      - Matching products are included with the results while the others are excluded'english', $1
+        if(search) {
+            values.push(`${search}:*`);
+            conditions.push(`to_tsvector('english', name || ' ' || description) @@ to_tsquery('english', $${values.length})`);
+        }
+
         if(categoryFilter) {
             values.push(categoryFilter);
             conditions.push(`category = $${values.length}`);
-        }    
+        }
 
-        //Finalise the WHERE, Order By, & Offset & Limit clauses
-        //"WHERE name ILIKE $1 AND category = $2"
-        const whereClause = `WHERE ${conditions.join(" AND ")}`;
-        //"ORDER BY name ASC"
+        //If no condition, return empty string to get all products else combine all conditons
+        //Example: "WHERE search AND categoryFilter"
+        let whereClause = "";
+        if(conditions.length > 0) {
+            whereClause = `WHERE ${conditions.join(" AND ")}`;
+        }
+
+        //Example: ORDER BY {name ASC}
         const orderByClause = `ORDER BY ${orderBy}`;
-        //if values has 2 items => LIMIT $3 OFFSET $4
+
+        //Example: LIMIT $3 OFFSET %4, limit to 24 products while skipping 48 products starting at 49
         const pagination = `LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
         
         //Run both queries at once with Promise.all
@@ -153,6 +168,7 @@ const queries = {
             //Count all matching products across all pages with filters
             client.query(`SELECT COUNT(*) FROM products ${whereClause}`, values)
         ]);
+      
         //Output
         return {
             products: productsResult.rows,
@@ -171,7 +187,6 @@ const queries = {
 
     //Fetch a single product and the 10 cheapest products within the same category
     getComparison: async (client, id) => {
-        //
         const getAllByID = `SELECT * FROM products WHERE id = $1`;
         const productResult = await client.query(getAllByID, [id]);
 
