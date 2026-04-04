@@ -75,8 +75,8 @@
                     <!-- Product Card -->
                     <div class="catalogue-card">
                         <!-- Image -->
-                        <div class="card-image">
-                            <img class="product-image" src="https://picsum.photos/400/300" alt="<%= product.name %>" data-id="<%= product.id %>">
+                        <div class="card-image" data-id="<%= product.id %>">
+                            <img class="product-image" src="https://picsum.photos/400/300" alt="<%= product.name %>">
                         </div>
                         <!-- Description -->
                         <div class="card-content">
@@ -103,17 +103,17 @@
                 <!-- Previous Page -->
                 <% if (currentPage > 1) { %>
                     <a href="?page=<%= currentPage - 1 %>">
-                        <button class="page-number">« Prev</buton>
+                        <button class="page-number">« Prev</button>
                     </a>
                <% } %>
                <!-- Page Numbers -->
                <% for(let i=1; i <= totalPages; i++) { %>
                     <% if (i === currentPage) { %>
-                        <a href="?&page=<%= i %>">
+                        <a href="?page=<%= i %>">
                             <button class="page-number active"><%= i %></button>
                         </a>
                     <% } else { %>
-                        <a href="?&page=<%= i %>">
+                        <a href="?page=<%= i %>">
                             <button class="page-number"><%= i %></button>
                         </a>
                     <% } %>
@@ -150,91 +150,17 @@
         <p id="catalogue-alert-msg"></p>
      </div>
     <%- include("./partials/footer.ejs") %> 
-    <script>
-        //Wait for DOM to load
-        document.addEventListener("DOMContentLoaded", () => {
-            //Initialisation
-            const modal = document.getElementById("catalogue-modal");
-            const closeModalBTN = document.getElementById("modal-close-btn");
-            //Event delagation
-            document.addEventListener("click", (e) => {
-                //Open the product modal
-                if(e.target.classList.contains("product-image")) {   
-                    const id = e.target.dataset.id;
-                    loadModal(id);
-                    modal.style.display = "block";
-                }
-                //Close the product modal
-                if(e.target === closeModalBTN) {
-                    modal.style.display = "none";
-                }
-                //Add product to the list
-                if(e.target.classList.contains("add-btn")) {
-                    const productId = e.target.dataset.id;
-                    //console.log("Clicked add button:", productId);
-                    addProductToList(productId);
-                }
-                if(e.target.classList.contains("select-btn")) {
-                    document.getElementById("compare-name-2").textContent = e.target.dataset.name;
-                    document.getElementById("compare-desc-2").textContent = e.target.dataset.desc;
-                    document.getElementById("compare-price-2").textContent = `€${e.target.dataset.price}`;
-                    document.getElementById("compare-add-btn").dataset.id = e.target.dataset.id;                    
-                }
-            });
-        });
-
-        async function addProductToList(productId) {
-            //Attempt to create a post request
-            //If successful, create alert otherwise produce an error
-            try {
-                const response = await fetch("/catalogue/add", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ id: productId })
-                });
-                //Parase product name from server response
-                const data = await response.json();
-                showAlert("Product added to the list");
-                console.log("Product added");
-            }
-            catch (err) {
-                showAlert("Failed to add list");
-                console.log("Add product failed: ", err);
-            }
-        }
-
-        //Very weird process (Alfie emoji)
-        async function loadModal(id) {
-            try {
-                const response = await fetch(`/catalogue/${id}`);
-                const html = await response.text();
-                document.getElementById("modal-content").innerHTML = html;
-            }
-            catch (err) {
-                console.log("failed to load modal: ", err);
-            }
-        }
-
-        function showAlert(message) {
-            const alert = document.getElementById("catalogue-alert");
-            const msg   = document.getElementById("catalogue-alert-msg");
-
-            msg.textContent  = message;
-            alert.style.display = "block";
-
-            setTimeout(() => alert.style.display = "none", 3000);            
-        }
-    </script>
+    
 
     <!-- Floating Dark Mode Toggle -->
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
       <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
     </button>
 
-    <!--Calling JavaScript for Theme function (Alfie emoji)-->
+    <!--Calling JavaScript for Theme function -->
     <script src="/js/theme.js"></script>
+    <!--Calling JavaScript for Catalogue DOM functions -->
+    <script src="/js/catalogue.js"></script>
 
 </body>
 </html>
