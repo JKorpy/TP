@@ -2,26 +2,26 @@
     <!-- Production Section 1 (Original)-->
     <div id="modal-product-1" class="modal-section">
         <!-- Description -->
-        <div id="compare-content">
+        <div id="compare-content-1">
             <img class="compare-image-1" src="https://picsum.photos/400/300" alt="<%= product.name %>">
             <h3 id="compare-name-1"><%= product.name %></h3>
             <p id="compare-desc-1"><%= product.description %></p>
             <p id="compare-price-1">€<%= product.price %></p>
             <!-- Buttons -->
-            <div id="product-footer">
+            <div class="product-footer">
                 <button class="add-btn" data-id="<%= product.id %>">Add to List</button>
             </div>
         </div>   
     </div>   
     <!-- Production Section 2 (Comparison)-->
     <div id="modal-product-2" class="modal-section" >
-        <div id="compare-content">
+        <div id="compare-content-2">
             <% if (filtered.length > 0) { %>
                 <img class="compare-image-2" src="https://picsum.photos/400/300" alt="<%= filtered[0].name %>">
                 <h3 id="compare-name-2"><%= filtered[0].name %></h3>
                 <p id="compare-desc-2"><%= filtered[0].description %></p>
                 <p id="compare-price-2">€<%= filtered[0].price %></p>
-                <div id="product-footer">
+                <div class="product-footer">
                     <button class="add-btn" id="compare-add-btn" data-id="<%= filtered[0].id %>">Add to List</button>
                 </div>
             <% } else { %>
@@ -34,9 +34,11 @@
 <div class="table-comparison">
     <table>
         <thead>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Compare</th>
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Compare</th>
+            </tr>
         </thead>
         <tbody>
             <% if (filtered.length > 0) { %>
