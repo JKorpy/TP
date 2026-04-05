@@ -1,84 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<%- include("./partials/header.ejs") %>
+    <%- include("./partials/header.ejs") %>
 
 <body>
-  <%- include("./partials/nav.ejs") %>
+    <%- include("./partials/nav.ejs") %>
 
-    <!--Main Content-->
+    <!-- Main Content -->
     <div id="profile-container">
 
-    <!-- USER CARD -->
-    <div class="profile-card">
+        <!-- User Card -->
+        <div class="profile-card">
 
-        <div class="profile-avatar">
-        <img src="/img/profile_svg.svg" alt="User Avatar">
+            <div class="profile-avatar">
+                <img src="/img/profile_svg.svg" alt="User Avatar">
+            </div>
+
+            <h1>Welcome <%- user.firstName %>!</h1>
+
+            <div class="profile-info">
+              <% if (success) { %>
+                  <div class="profile-message success-message">
+                     <%= success %>
+                  </div>
+                <% } %>
+              <% if (error) { %>
+                    <div class="profile-message error-message">
+                        <%= error %>
+                    </div>
+                <% } %>
+
+
+                <form id="profileForm" action="/profile/update" method="POST">
+
+                    <div class="profile-field">
+                        <label>First Name</label>
+                        <input type="text" name="firstName" class="profile-input" value="<%= user.firstName %>" disabled>
+                    </div>
+
+                    <div class="profile-field">
+                        <label>Last Name</label>
+                        <input type="text" name="lastName" class="profile-input" value="<%= user.lastName %>" disabled>
+                    </div>
+
+                    <div class="profile-field">
+                        <label>Username</label>
+                        <input type="text" name="username" class="profile-input" value="<%= user.username %>" disabled>
+                    </div>
+
+                    <div class="profile-field">
+                        <label>Email</label>
+                        <input type="email" name="email" class="profile-input" value="<%= user.email %>" disabled>
+                    </div>
+
+                    <div class="profile-field">
+                        <label>Phone Number</label>
+                        <input type="number" name="phone" class="profile-input" value="<%= user.phone %>" disabled>
+                    </div>
+
+                    <div class="profile-field">
+                        <label>Date of Birth</label>
+                        <input type="date" name="dob" class="profile-input" value="<%= user.dob %>" disabled>
+                    </div>
+                    
+
+                    <div class="profile-field">
+                        <label>Current Password</label>
+                        <input
+                            type="password"
+                            name="currentPassword"
+                            class="profile-input"
+                            placeholder="Enter current password"
+                            disabled
+                        >
+                    </div>
+
+                    <div class="profile-field">
+                        <label>New Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            class="profile-input"
+                            placeholder="Enter new password"
+                            disabled
+                        >
+                    </div>
+
+                    <div class="profile-field">
+                        <label>Confirm New Password</label>
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            class="profile-input"
+                            placeholder="Confirm new password"
+                            disabled
+                        >
+                    </div>
+
+                    <button type="button" id="editProfileBtn" class="btn">Update Profile</button>
+
+                </form>
+            </div>
+
         </div>
-
-        <h1>Welcome <%- user.firstName %>!</h1>
-
-        <div class="profile-info">
-          <form id="profileForm" action="/profile/update" method="POST">
-
-            <div class="profile-field">
-              <label>First Name</label>
-              <input type="text" name="firstName" class="profile-input" value="<%= user.firstName  %>" disabled>
-            </div>
-
-            <div class="profile-field">
-              <label>Last Name</label>
-              <input type="text" name="lastName" class="profile-input" value="<%= user.lastName %>" disabled>
-            </div>
-
-            <div class="profile-field">
-              <label>Username</label>
-              <input type="text" name="username" class="profile-input" value="<%= user.username %>" disabled>
-            </div>
-
-            <div class="profile-field">
-              <label>Email</label>
-              <input type="email" name="email" class="profile-input" value="<%= user.email %>" disabled>
-            </div>
-
-            <div class="profile-field">
-              <label>Phone Number</label>
-              <input type="number" name="phone" class="profile-input" value="<%= user.phone %>" disabled>
-            </div>
-
-            <div class="profile-field">
-              <label>Date of Birth</label>
-              <input type="date" name="dob" class="profile-input" value="<%= user.dob %>" disabled>
-            </div>
-
-            <div class="profile-field">
-              <label>New Password</label>
-              <input type="password" name="password" class="profile-input" value="<%= user.password %>" disabled>
-            </div>
-
-            <button type="button" id="editProfileBtn" class="btn">Update Profile</button>
-
-          </form>
-        </div>
-
-
     </div>
 
-    </div>
+    <%- include("./partials/footer.ejs") %>
 
-
-  <%- include("./partials/footer.ejs") %>
-  
     <!-- Floating Dark Mode Toggle -->
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
-      <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
+        <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
     </button>
 
-    <!--Calling JavaScript for Theme function-->
+    <!-- Calling JavaScript for Theme function -->
     <script src="/js/theme.js"></script>
-    <!--Calling JavaScript for Profile Form function-->
-    <script src="/js/profile.js"></script>
-    
-</body>
 
+    <!-- Calling JavaScript for Profile Form function -->
+    <script src="/js/profile.js"></script>
+</body>
 </html>
