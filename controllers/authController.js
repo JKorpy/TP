@@ -29,16 +29,15 @@ exports.postLogin = async (request, response) => {
     }
 
     // Store the logged in user details in the session so they remain authenticated
-    request.session.user = {
-      id: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      username: user.username,
-      email: user.email,
-      phone: user.phone,
-      dob: user.date_of_birth,
-      password: user.password
-    };
+     request.session.user = {
+     id: user.id,
+     firstName: user.first_name,
+     lastName: user.last_name,
+     username: user.username,
+     email: user.email,
+     phone: user.phone,
+     dob: user.date_of_birth
+};
 
     // Clear captcha after successful login
     request.session.captcha = null;

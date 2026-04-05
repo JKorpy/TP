@@ -808,6 +808,24 @@ footer {
     border-color: var(--accent);
     background-color: var(--bg);
 }
+.profile-message {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    text-align: center;
+}
+
+.error-message {
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #842029;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+.success-message {
+    background-color: rgba(25, 135, 84, 0.12);
+    color: #0f5132;
+    border: 1px solid rgba(25, 135, 84, 0.3);
+}
 
 /*------------------------------------*\
   #LIST
