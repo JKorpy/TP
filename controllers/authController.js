@@ -76,8 +76,13 @@ exports.postRegister = async (request, response) => {
     //  Auto-login: create session
     request.session.user = {
       id: result.id,
+      firstName: result.first_name,
+      lastName: result.last_name,
       username: result.username,
-    };
+      email: result.email,
+      phone: result.phone,
+      dob: result.date_of_birth
+};
     //  Go straight to protected home page once registration credentials are correct(autologin)
     response.redirect("/");
   } 
@@ -89,6 +94,12 @@ exports.postRegister = async (request, response) => {
       return response.render("register", {
         error: "Missing fields",
         captcha: regenerateCaptchaValue(request)
+      });
+    }
+    else if (error.message === "Passwords do not match") {
+      return response.render("register", {
+      error: error.message,
+      captcha: regenerateCaptchaValue(request)
       });
     }
     //Password Error
