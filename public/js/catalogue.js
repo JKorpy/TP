@@ -25,7 +25,7 @@ document.addEventListener("click", (e) => {
     }
     if(e.target.classList.contains("select-btn")) {
         document.getElementById("compare-name-2").textContent = e.target.dataset.name;
-        document.getElementById("compare-desc-2").textContent = e.target.dataset.desc;
+        document.getElementById("compare-brand-2").textContent = e.target.dataset.brand;
         document.getElementById("compare-price-2").textContent = `€${e.target.dataset.price}`;
         document.getElementById("compare-add-btn").dataset.id = e.target.dataset.id;                    
     }

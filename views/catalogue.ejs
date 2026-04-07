@@ -16,6 +16,7 @@
         <div id="catalogue-sidebar">
             <div id="sticky-sidebar">
                 <h2>Filters</h2>
+                <!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form -->
                 <form id="catalogue-filter" method="GET" action="/catalogue">
                     <!-- Search -->
                     <div class="filter-group">
@@ -43,28 +44,21 @@
                         </select>
                     </div>  
 
-                    <!-- Brand Filters --> 
-                    <!-- 
+                    <!-- Brand Filters -->                     
                     <div class="filter-group">
                         <label>Brand</label>
                         <div class="checkbox-group">
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="check" value="lidl-val">
-                            <span>Lidl</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="check" value="aldi-val">
-                            <span>Aldi</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="check" value="supervalu-val">
-                            <span>Supervalu</span>
-                        </label>
+                            <% uniqueBrands.forEach(brand => { %>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="check" value="<%= brand %>" <%= brandFilter && brandFilter.includes(brand) ? "checked" : "" %> onchange="this.form.submit()">
+                                    <span><%= brand %></span>
+                                </label>
+                           <% }); %>
                         </div>
                     </div>  
-                    -->
-                    <!-- Submit Button -->
-                    <button type="submit" id="filterBTN">Apply Filters</button>
+                    
+                    <!-- Reset Button -->
+                    <button type="button" id="filterBTN" onclick="window.location.href='/catalogue'">Reset Filters</button>
                 </form>
             </div>
         </div>
@@ -81,7 +75,7 @@
                         <!-- Description -->
                         <div class="card-content">
                             <!-- Title -->
-                            <h3 class="card-title">(<%= product.name %>) <%= product.description %></h3>
+                            <h3 class="card-title">(<%= product.brand %>) <%= product.name %></h3>
                             <!-- Price & Button -->
                             <div class="card-footer">
                                 <p class="card-price">€<%= product.price %></p>
@@ -97,35 +91,50 @@
         <!-- Pagination -->
         <footer id="catalogue-footer">
             <!-- Example (Showing 1 - 24 of 200)-->
-            <p>Showing <%= (currentPage - 1) * 24 + 1 %> - <%= Math.min(currentPage * 24, totalProducts) %> of <%= totalProducts %></p>
+            <p>
+                Showing <%= (currentPage - 1) * 24 + 1 %> - 
+                <%= Math.min(currentPage * 24, totalProducts) %> of 
+                <%= totalProducts %>
+            </p>
             <!-- Page Numbers -->
+            <!--    Example: If clicking page 6, /catalogue?search=food&check=centra&page=6, 
+                    this result will be queried by the controller to preserve the filters
+            -->
             <div id="page-numbers">
                 <!-- Previous Page -->
                 <% if (currentPage > 1) { %>
-                    <a href="?page=<%= currentPage - 1 %>">
-                        <button class="page-number">« Prev</button>
-                    </a>
-               <% } %>
-               <!-- Page Numbers -->
-               <% for(let i=1; i <= totalPages; i++) { %>
-                    <% if (i === currentPage) { %>
-                        <a href="?page=<%= i %>">
-                            <button class="page-number active"><%= i %></button>
-                        </a>
-                    <% } else { %>
-                        <a href="?page=<%= i %>">
-                            <button class="page-number"><%= i %></button>
-                        </a>
+                        <button class="page-number" 
+                                form="catalogue-filter" 
+                                name="page" 
+                                value="<%= currentPage - 1 %>">
+                                Prev
+                        </button>
+                <% } %>
+                <!-- Page Numbers -->
+                <% for(let i=1; i <= totalPages; i++) { %>
+                    <% const isFirst = i === 1 %>
+                    <% const isLast = i === totalPages %>
+                    <% const isViewed = i >= currentPage - 2 && i <= currentPage + 2 %>
+                    <% if (isFirst || isLast || isViewed) { %>
+                        <button class="page-number 
+                                <%= i === currentPage ? 'active' : '' %>" 
+                                form="catalogue-filter" 
+                                name="page" 
+                                value="<%= i %>">
+                                <%= i %>
+                        </button>                    
                     <% } %>
-               <% } %>
+                <% } %>
 
                <!-- Next Page -->
                 <% if (currentPage < totalPages) { %>
-                    <a href="?page=<%= currentPage + 1 %>">
-                        <button class="page-number">Next »</button>
-                    </a>
-               <% } %>               
-    
+                    <button class="page-number" 
+                            form="catalogue-filter" 
+                            name="page" 
+                            value="<%= currentPage + 1 %>">
+                            Next 
+                    </button>
+                <% } %>               
             </div>
         </footer>
     </div>    
