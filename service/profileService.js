@@ -1,7 +1,5 @@
 module.exports = (queries) => ({
     updateUser: async (client, updatedUser) => {
-        //Include Verification
-
 
         //TRANSACTION - update user information
         try {

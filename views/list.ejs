@@ -34,7 +34,7 @@
                 <% if (items.length > 0) { %>
                     <% items.forEach(item => { %>
                         <tr data-id="<%= item.id %>">
-                            <td class="product-name">(<%= item.name %>) <%= item.description %></td>
+                            <td class="product-name">(<%= item.brand %>) <%= item.name %></td>
                             <td class="product-qty"><%= item.quantity %></td>
                             <td class="product-price" data-price="<%=parseFloat(item.total).toFixed(2) %>">€<%=parseFloat(item.total).toFixed(2)%></td>
                             <td>

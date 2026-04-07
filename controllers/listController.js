@@ -15,9 +15,9 @@ exports.getList = async (request, response) => {
         //Output
         response.render("list", { items, title: "Shopping List" });
     }
-    catch(err) {
-        console.error("Failed to get shopping list", err);
-        response.status(500).render("error", { message: "Could not load shopping list." });
+    catch(error) {
+        console.error("Failed to get shopping list", error);
+        response.status(500).json({ message: "Could not load shopping list." });
     }
     finally {
         //END CONNECTION
@@ -60,8 +60,8 @@ exports.decrementItem = async (request, response) => {
         if(!result) return response.status(404).json({message: "Item not found"});    
         response.json(result);
     }
-    catch(err) {    
-        console.error("Failed to decrease quantity of the product", err);
+    catch(error) {    
+        console.error("Failed to decrease quantity of the product", error);
         response.status(500).json({ message: "Failed to decrease quantity" });
     }
     finally {
@@ -81,8 +81,8 @@ exports.deleteItem = async (request, response) => {
         await listService.deleteItem(client, userId, listId);   
         response.json({success: true});
     }
-    catch(err) { 
-        console.error("Failed to delete item:", err);
+    catch(error) { 
+        console.error("Failed to delete item:", error);
         response.status(500).json({ message: "Failed to delete item" });
     }
     finally {

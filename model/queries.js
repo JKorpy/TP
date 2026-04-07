@@ -6,51 +6,7 @@ const queries = {
 
     // ######################
     //  Login Page 
-    // ######################    
-
-    //Drop table
-    dropTable: async (client) => {
-        await client.query(`DROP TABLE IF EXISTS products`)
-    },
-
-    //Create Table
-    createTable: async (client) => {
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS public.products (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(255),
-                category VARCHAR(255),
-                price NUMERIC(10, 2),
-                description VARCHAR(255)
-            );
-        `);    
-    },
-
-    //Create User Table
-    createUserTable: async (client) => {
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS public.products (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(255),
-                category VARCHAR(255),
-                price NUMERIC(10, 2),
-                description VARCHAR(255)
-            );
-        `);    
-    },  
-
-    //Create Basket Table
-    createListsTable: async (client) => {
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS public.lists (
-                id SERIAL PRIMARY KEY,
-                user_id INT REFERENCES users(id),
-                product_id INT REFERENCES products(id),
-                quantity INT DEFAULT 1,
-                UNIQUE (user_id, product_id)
-            )
-        `);    
-    },      
+    // ######################         
     
     registerUser: async (client, userInfo, hashedPassword) => {
         const result = await client.query(
@@ -67,7 +23,7 @@ const queries = {
     //Get all products
     getAllProducts: async (client) => {
         const result = await client.query(`
-           SELECT id, name, category, price, description FROM public.products 
+           SELECT id, name, category, price, brand FROM public.products 
         `);
         return result.rows
     },
@@ -75,9 +31,9 @@ const queries = {
     //Add product JSON to PostgreSQL
     addAllProducts: async (client, product) => {
         await client.query(`
-            INSERT INTO public.products (id, name, category, price, description)
+            INSERT INTO products (id, name, category, price, brand)
             VALUES ($1, $2, $3, $4, $5)`,
-            [product.id, product.name, product.category, product.price, product.description]    
+            [product.id, product.name, product.category, product.price, product.brand]    
         );
     },
 
@@ -95,7 +51,7 @@ const queries = {
     //Get products for comparison
     getComparedProducts: async (client, product) => {
         const result = await client.query(`
-            SELECT category FROM public.products
+            SELECT category FROM products
             WHERE id != $1
             AND category = $2
             ORDER BY price ASC
@@ -107,7 +63,7 @@ const queries = {
     //Get products in ascending order
     getAscending: async (client, product) => {
         const result = await client.query(`
-            SELECT category FROM public.products
+            SELECT category FROM products
             WHERE id != $1
             AND category = $2
             ORDER BY price ASC
@@ -119,20 +75,20 @@ const queries = {
     //Search product by id
     searchById: async (client, id) => {
         const result = await client.query(`
-            SELECT id, name, cateogry, price, description FROM public.products
+            SELECT id, name, cateogry, price, brand FROM public.products
             WHERE id = $1`, 
             [id]);
         return result.rows[0];
     },
 
     //get catalogue
-    getCatalogue: async (client ,{search, categoryFilter, orderBy, limit, offset}) => {
+    getCatalogue: async (client ,{search, categoryFilter, brandFilter, orderBy, limit, offset}) => {
 
         const conditions = [];
         const values = [];
 
         // Full Text Search: (https://www.postgresql.org/docs/current/textsearch-intro.html)
-        // to_tsvector('english', name || ' ' || description
+        // to_tsvector('english', name)
         //      - Converts the concatenated text into searchable tokens e.g 'coffe'
         // to_tsquery('english', $1)
         //      - Converts the search term into a query
@@ -140,13 +96,19 @@ const queries = {
         //      - Matching products are included with the results while the others are excluded'english', $1
         if(search) {
             values.push(`${search}:*`);
-            conditions.push(`to_tsvector('english', name || ' ' || description) @@ to_tsquery('english', $${values.length})`);
+            conditions.push(`to_tsvector('english', name) @@ to_tsquery('english', $${values.length})`);
         }
 
         if(categoryFilter) {
             values.push(categoryFilter);
             conditions.push(`category = $${values.length}`);
         }
+
+        //ANY($1) Matches brand against any value in the passed array.
+        if (brandFilter && brandFilter.length > 0) {
+            values.push(brandFilter);
+            conditions.push(`brand = ANY($${values.length})`);
+        }        
 
         //If no condition, return empty string to get all products else combine all conditons
         //Example: "WHERE search AND categoryFilter"
@@ -179,10 +141,18 @@ const queries = {
     //Get unqique categories
     getUniqueCategories: async (client) => {
         const result = await client.query(`
-            SELECT DISTINCT category FROM public.products ORDER BY category ASC`
+            SELECT DISTINCT category FROM products ORDER BY category ASC`
         );
         //Extracts category string from each row object
         return result.rows.map(row => row.category);
+    },
+
+    getUniqueBrands: async (client) => {
+        const result = await client.query(`
+            SELECT DISTINCT brand FROM products ORDER BY brand ASC`
+        );
+        //Extracts brand string from each row object
+        return result.rows.map(row => row.brand);
     },
 
     //Fetch a single product and the 10 cheapest products within the same category
@@ -217,7 +187,7 @@ const queries = {
 
     getShoppingList: async (client, userId) => {
         const result = await client.query(`
-            SELECT l.id, p.name, p.description, l.quantity, (l.quantity * p.price)::numeric as total
+            SELECT l.id, p.name, p.brand, l.quantity, (l.quantity * p.price)::numeric as total
             FROM lists l
             JOIN products p ON l.product_id = p.id
             WHERE l.user_id = $1
@@ -268,7 +238,7 @@ const queries = {
     // ######################
     getFeaturedProducts: async (client) => {
         const result = await client.query(`
-            SELECT name, description, price FROM products
+            SELECT name, brand, price FROM products
             ORDER BY RANDOM()
             LIMIT 8`
         );
@@ -315,3 +285,48 @@ const queries = {
 }
 
 module.exports = queries;
+
+    // Old Code
+    // //Drop table
+    // dropTable: async (client) => {
+    //     await client.query(`DROP TABLE IF EXISTS products`)
+    // },
+
+    // //Create Table
+    // createTable: async (client) => {
+    //     await client.query(`
+    //         CREATE TABLE IF NOT EXISTS products (
+    //             id SERIAL PRIMARY KEY,
+    //             name VARCHAR(255),
+    //             category VARCHAR(255),
+    //             price NUMERIC(10, 2),
+    //             description VARCHAR(255)
+    //         );
+    //     `);    
+    // },
+
+    // //Create User Table
+    // createUserTable: async (client) => {
+    //     await client.query(`
+    //         CREATE TABLE IF NOT EXISTS products (
+    //             id SERIAL PRIMARY KEY,
+    //             name VARCHAR(255),
+    //             category VARCHAR(255),
+    //             price NUMERIC(10, 2),
+    //             description VARCHAR(255)
+    //         );
+    //     `);    
+    // },  
+
+    // //Create Basket Table
+    // createListsTable: async (client) => {
+    //     await client.query(`
+    //         CREATE TABLE IF NOT EXISTS lists (
+    //             id SERIAL PRIMARY KEY,
+    //             user_id INT REFERENCES users(id),
+    //             product_id INT REFERENCES products(id),
+    //             quantity INT DEFAULT 1,
+    //             UNIQUE (user_id, product_id)
+    //         )
+    //     `);    
+    // }, 

@@ -8,7 +8,11 @@ exports.getCatalogue = async (request, response) => {
   const search = request.query.search || "";
   const sort = request.query.sort || "ascending";
   const categoryFilter = request.query.category || "";
-  const currentPage = parseInt(request.query.page) || 1;
+  const brandFilter = [].concat(request.query.check || []);
+
+  //Checks if filter is enabled to reset to the first page.
+  const isFiltering = search || categoryFilter || brandFilter.length;
+  const currentPage = isFiltering && !request.query.page ? 1 : parseInt(request.query.page) || 1;
 
   let client  = null;  
   try {  
@@ -16,8 +20,8 @@ exports.getCatalogue = async (request, response) => {
     client = await pool.connect();    
 
     //Service
-    const {products, totalProducts, totalPages, uniqueCategories} = await catalogueService.getCataloguePage(client, {search, sort, categoryFilter, currentPage});
-
+    const {products, totalProducts, totalPages, uniqueCategories, uniqueBrands} = await catalogueService.getCataloguePage(client, {search, sort, categoryFilter, brandFilter, currentPage});
+ 
     //Output
     response.render("catalogue", {
       title: "Catalogue",
@@ -29,6 +33,8 @@ exports.getCatalogue = async (request, response) => {
       sort,
       categoryFilter,
       uniqueCategories,
+      brandFilter,
+      uniqueBrands,
     });    
   }
   catch(err) {
