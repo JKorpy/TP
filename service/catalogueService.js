@@ -9,22 +9,25 @@ const sortOptions = {
 const limit = 24;
 
 module.exports = (queries) => ({
-    getCataloguePage: async(client, {search, sort, categoryFilter, currentPage}) => {
+    getCataloguePage: async(client, {search, sort, categoryFilter, brandFilter, currentPage}) => {
         //Initialisations
         const orderBy = sortOptions[sort] || "name ASC";
         const offset =  (currentPage - 1) * limit;
 
-        //Search the products and total number of products
-        const {products, totalProducts} = await queries.getCatalogue(client, {
-        search, categoryFilter, orderBy, limit, offset
-        });
-        //Get the unique categories
-        const uniqueCategories = await queries.getUniqueCategories(client);
+        //Execute queries at the same time
+        //Get Catalouge information, and unique categories and brands.
+        //Optimisation reason: rather than having each query wait one another,
+        //the execution time should be based on slowest query rather than having it in total
+        const [{products, totalProducts}, uniqueCategories, uniqueBrands] = await Promise.all([
+            queries.getCatalogue(client, {search, categoryFilter, brandFilter, orderBy, limit, offset}),
+            queries.getUniqueCategories(client),
+            queries.getUniqueBrands(client),
+        ]);
 
         //Calculate total pages 
         const totalPages = Math.ceil(totalProducts / limit);     
         
-        return { products, totalProducts, totalPages, uniqueCategories};
+        return { products, totalProducts, totalPages, uniqueCategories, uniqueBrands};
     },
 
     addProductToList: async(client, {userId, productId}) => {
