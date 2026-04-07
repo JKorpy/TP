@@ -13,7 +13,7 @@ const queries = {
             `INSERT INTO users 
             (first_name, last_name, username, email, phone, date_of_birth, password_hash) 
             VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id, username`,
+            RETURNING id, first_name, last_name, username, email, phone, date_of_birth`,
             [userInfo.firstName, userInfo.lastName, userInfo.username, userInfo.email, userInfo.phone || null, userInfo.dob || null, hashedPassword]
         );        
         return result.rows[0];
