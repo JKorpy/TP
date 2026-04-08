@@ -13,11 +13,22 @@ module.exports = (queries) => ({
 
     registerUser: async (client, userInfo, password) => {
         //Checkpoints: validate username, password and password length
-        if(!userInfo.username || !password) {
-            throw new Error("Missing fields");
+        const firstName = userInfo.firstName?.trim();
+        const lastName = userInfo.lastName?.trim();
+        const username = userInfo.username?.trim();
+        const email = userInfo.email?.trim();
+        const confirmPassword = userInfo.confirmPassword?.trim();
+
+        if (!firstName || !lastName || !username || !email || !password || !confirmPassword) {
+        throw new Error("Missing fields");
         }
-        if(password.length < 8) {
-            throw new Error("Password must be at least 8 characters");
+
+    if (password !== confirmPassword) {
+    throw new Error("Passwords do not match");
+        }
+
+    if (password.length < 8) {
+    throw new Error("Password must be at least 8 characters");
         }
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -30,7 +41,7 @@ module.exports = (queries) => ({
         }
         catch (error) {
             await client.query("ROLLBACK");
-            return error;
+            throw error;
         }
     },
 });
