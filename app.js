@@ -237,24 +237,19 @@ if (!captchaInput || captchaInput.trim().toUpperCase() !== request.session.captc
     //Adding featured stores:
     const stores = [
       {
-        name: "Tesco",
-        logo: "/img/tescoLogo.jpg",
-        url: "https://www.tesco.com/"
+        name: "Centra",
+        logo: "/img/centraLogo_svg.webp",
+        url: "https://centra.ie/"
       },
       {
-        name: "SuperValu",
-        logo: "/img/supervaluLogo.webp",
-        url: ""
+        name: "Mace",
+        logo: "/img/maceLogo_svg.webp",
+        url: "https://www.mace.ie/"
       },
       {
-        name: "Dunnes",
-        logo: "/img/dunnesLogo.webp",
-        url: "https://www.dunnesstoresgrocery.com/"
-      },
-      {
-        name: "Lidl",
-        logo: "/img/lidlLogo.png",
-        url: "https://www.lidl.com/"
+        name: "Spar",
+        logo: "/img/sparLogo_svg.png",
+        url: "https://www.spar.ie/"
       }
 
     ];
