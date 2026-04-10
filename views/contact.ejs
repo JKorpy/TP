@@ -1,9 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-    <%- include("./partials/header.ejs") %>   
+    <%- include("./partials/header.ejs") %>
 <body>
     <%- include("./partials/nav.ejs") %>
-    <h1>Contact</h1>
-    <%- include("./partials/footer.ejs") %> 
+
+    <section id="contact-page">
+        <div class="contact-card contact-info-card">
+            <div class="contact-heading">
+                <img src="/img/contact_svg.svg" alt="Contact icon" class="contact-page-icon">
+                <div>
+                    <h1>Contact Us</h1>
+                    <p>Send your feedback or questions using the form below.</p>
+                </div>
+            </div>
+
+            <div class="contact-address-block">
+                <h3>Address</h3>
+                <p>
+                    National College of Ireland<br>
+                    1 Mayor Street Lower<br>
+                    IFSC, Dublin 1<br>
+                    D01 K6W2
+                </p>
+                <a 
+                    href="https://www.google.com/maps?q=National+College+of+Ireland+1+Mayor+Street+Lower+Dublin+1+D01+K6W2" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="btn"
+                >
+                    Open Google Maps
+                </a>
+            </div>
+        </div>
+
+        <div class="contact-card">
+            <form id="contactForm" class="contact-form">
+                <div class="contact-field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="contact-input" placeholder="Enter your email" required>
+                </div>
+
+                <div class="contact-field">
+                    <label for="reason">Reason for Contact</label>
+                    <input type="text" id="reason" name="reason" class="contact-input" placeholder="Enter your reason for contact" required>
+                </div>
+
+                <div class="contact-field">
+                    <label for="feedback">Enter Feedback</label>
+                    <textarea id="feedback" name="feedback" class="contact-input contact-textarea" placeholder="Write your feedback here" required></textarea>
+                </div>
+
+                <div class="contact-actions">
+                    <button type="submit" class="btn">Submit Feedback</button>
+                    <button type="button" id="clearContactForm" class="btn contact-clear-btn">Clear Page</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <%- include("./partials/footer.ejs") %>
+
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
+      <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
+    </button>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/contact.js"></script>
 </body>
 </html>
