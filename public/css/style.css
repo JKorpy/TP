@@ -107,7 +107,53 @@ body {
     pointer-events: none;
 }
 
+/*------------------------------------*\
+  #Table
+\*------------------------------------*/
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+
+thead th {
+  padding: 15px;
+  text-align: center;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  border-bottom: 3px solid var(--bg);
+}
+
+tbody tr {
+  border-bottom: 3px solid var(--bg);
+
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+
+tbody td {
+  padding: 15px;
+  color: var(--text-primary);
+}
+
+/*------------------------------------*\
+  #Table - List
+\*------------------------------------*/
+
+#list-footer td {
+    background: var(--surface);
+    font-weight: bold;
+    text-align: right;
+    padding: 16px;
+}
 
 /*------------------------------------*\
   #Typography
@@ -130,8 +176,6 @@ h3 {
 p {
     color: var(--text-secondary);
 }
-
-
 
 /*------------------------------------*\
   #Navbar
@@ -579,6 +623,29 @@ footer {
 }
 
 /*------------------------------------*\
+  #Alert
+\*------------------------------------*/
+
+#catalogue-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--accent);
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    z-index: 1;
+    display: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;    
+}
+
+#catalouge-alet p {
+    color: white;
+}
+
+
+/*------------------------------------*\
   #Responsive Catalogue
 \*------------------------------------*/
 
@@ -657,6 +724,7 @@ footer {
     box-shadow: var(--shadow);
     padding: 25px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 20px;
 }
@@ -670,6 +738,7 @@ footer {
 .profile-info {
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .profile-actions {
@@ -721,6 +790,7 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    width: 100%;
 }
 
 .profile-input {
@@ -738,8 +808,24 @@ footer {
     border-color: var(--accent);
     background-color: var(--bg);
 }
+.profile-message {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    text-align: center;
+}
 
-
+.error-message {
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #842029;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+.success-message {
+    background-color: rgba(25, 135, 84, 0.12);
+    color: #0f5132;
+    border: 1px solid rgba(25, 135, 84, 0.3);
+}
 
 /*------------------------------------*\
   #LIST
@@ -749,42 +835,13 @@ footer {
 
 #list-container {
     background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
     text-align: center;
     max-width: 900px;
     margin: 40px auto;
     box-shadow: var(--shadow);
-
 }    
-
-
-/*------------------------------------*\
-  #Table
-\*------------------------------------*/
-
-#list-table {
-    border-collapse: collapse;
-    border: 1px solid black;
-    background-color: var(--surface);
-    width: 100%;    
-}
-
-#list-table th, #list-table td {   
-    padding: 14px;  
-}
-
-#list-table th {
-    border: 1px solid black;
-    background-color: var(--surface);
-    font-size: 1.2rem;
-}
-
-#list-table td {
-    border: 1px solid black;
-}
-
-#list-table tr:nth-child(even) {
-    background-color: var(--surface);
-}
 
 /*------------------------------------*\
   #Buttons
@@ -902,6 +959,7 @@ footer {
 .modal-section {
     margin: 2.5% 0;
     padding: 20px;
+
 }
 
 .modal-header h2 {
@@ -909,37 +967,137 @@ footer {
 }
 
 /*------------------------------------*\
-  #Product Modal
+  #Comparison Modal
 \*------------------------------------*/
 
-#product-section {     
-    text-align: center;
-    background-color: var(--surface);
+.products-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 10px;;
+    margin: 20px 20px 0;
 }
+
+#modal-product-1, #modal-product-2 {     
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.table-comparison {
+    margin: 20px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+
 
 
 /*------------------------------------*\
  .login
 \*------------------------------------*/
-.logo{
-    width: 40px;
-    height: 10px;
+body.login-page {
+    background-image: url("https://images.unsplash.com/photo-1557683316-973673baf926");
+    background-size: cover;
+    background-position: center;
+    background: linear-gradient(135deg, #dcc0b1, #c9ad9c);
+    min-height: 100vh;
 }
-.login-icon{
-    font-size:28px;
+
+.login-page .login-container {
+    min-height: 100vh;
 }
-.register-icon{
-    font-size:18px;
+
+.login-page .login-card {
+    max-width: 420px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 15px;
 }
-.form-control{
-    border-radius:10px;
-    padding:8px 10px;
-    font-size:14px;
+
+.login-page .form-control {
+    border-radius: 10px;
 }
-.btn-primary{
-    border-radius:10px;
-    padding:8px;
-    font-weight:500;
+
+.login-page .btn-primary {
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.login-page .login-icon {
+    font-size: 40px;
+}
+
+.login-page .captcha-box {
+    letter-spacing: 4px;
+}
+/*------------------------------------*\
+ .Registration
+\*------------------------------------*/
+
+/*------------------------------------*\
+  #REGISTER PAGE
+\*------------------------------------*/
+
+body.register-page {
+    background: linear-gradient(135deg, #dcc0b1, #c9ad9c);
+    min-height: 100vh;
+}
+
+.register-page .register-container {
+    min-height: 100vh;
+}
+
+.register-page .register-card {
+    max-width: 650px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 18px;
+}
+
+.register-page .form-control {
+    border-radius: 10px;
+    border: 1px solid #d6b8a6;
+}
+
+.register-page .form-control:focus {
+    border-color: #c8a691;
+    box-shadow: 0 0 5px rgba(200, 166, 145, 0.6);
+}
+
+.register-page .btn-primary {
+    background: linear-gradient(135deg, #d6b8a6, #c8a691);
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.register-page .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.register-page .login-icon {
+    font-size: 40px;
+}
+
+.register-page .register-title {
+    color: #6b4f3f;
+}
+
+.register-page .register-link {
+    color: #b08968;
+}
+
+.register-page .captcha-box {
+    letter-spacing: 4px;
 }
 /*------------------------------------*\
   #Biblography

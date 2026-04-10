@@ -16,11 +16,12 @@
         <div id="catalogue-sidebar">
             <div id="sticky-sidebar">
                 <h2>Filters</h2>
+                <!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form -->
                 <form id="catalogue-filter" method="GET" action="/catalogue">
                     <!-- Search -->
                     <div class="filter-group">
                         <label for="search">Search</label>
-                        <input type="text" name="search" placeholder="<%= search ||  "Search products..."%>">
+                        <input type="text" name="search" value="<%= search ||  ""%>">
                     </div>
                     <!-- Select Dropdown -->
                     <div class="filter-group">
@@ -43,28 +44,21 @@
                         </select>
                     </div>  
 
-                    <!-- Brand Filters --> 
-                    <!-- 
+                    <!-- Brand Filters -->                     
                     <div class="filter-group">
                         <label>Brand</label>
                         <div class="checkbox-group">
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="check" value="lidl-val">
-                            <span>Lidl</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="check" value="aldi-val">
-                            <span>Aldi</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="check" value="supervalu-val">
-                            <span>Supervalu</span>
-                        </label>
+                            <% uniqueBrands.forEach(brand => { %>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="check" value="<%= brand %>" <%= brandFilter && brandFilter.includes(brand) ? "checked" : "" %> onchange="this.form.submit()">
+                                    <span><%= brand %></span>
+                                </label>
+                           <% }); %>
                         </div>
                     </div>  
-                    -->
-                    <!-- Submit Button -->
-                    <button type="submit" id="filterBTN">Apply Filters</button>
+                    
+                    <!-- Reset Button -->
+                    <button type="button" id="filterBTN" onclick="window.location.href='/catalogue'">Reset Filters</button>
                 </form>
             </div>
         </div>
@@ -75,17 +69,17 @@
                     <!-- Product Card -->
                     <div class="catalogue-card">
                         <!-- Image -->
-                        <div class="card-image">
-                            <img class="product-image" src="https://picsum.photos/400/300" alt="<%= product.name %>"">
+                        <div class="card-image" data-id="<%= product.id %>">
+                            <img class="product-image" src="https://picsum.photos/400/300" alt="<%= product.name %>">
                         </div>
                         <!-- Description -->
                         <div class="card-content">
                             <!-- Title -->
-                            <h3 class="card-title">(<%= product.name %>) <%= product.description %></h3>
+                            <h3 class="card-title">(<%= product.brand %>) <%= product.name %></h3>
                             <!-- Price & Button -->
                             <div class="card-footer">
                                 <p class="card-price">€<%= product.price %></p>
-                                <button class="cardBTN" data-id="<%= product.id %>">Add to List</button>
+                                <button class="add-btn" data-id="<%= product.id %>">Add to List</button>
                             </div>
                         </div>
                     </div>
@@ -97,36 +91,50 @@
         <!-- Pagination -->
         <footer id="catalogue-footer">
             <!-- Example (Showing 1 - 24 of 200)-->
-            <p>Showing <%= (currentPage - 1) * 24 + 1 %> - <%= Math.min(currentPage * 24, totalProducts) %> of <%= totalProducts %></p>
+            <p>
+                Showing <%= (currentPage - 1) * 24 + 1 %> - 
+                <%= Math.min(currentPage * 24, totalProducts) %> of 
+                <%= totalProducts %>
+            </p>
             <!-- Page Numbers -->
+            <!--    Example: If clicking page 6, /catalogue?search=food&check=centra&page=6, 
+                    this result will be queried by the controller to preserve the filters
+            -->
             <div id="page-numbers">
                 <!-- Previous Page -->
                 <% if (currentPage > 1) { %>
-                    <a href="?page=<%= currentPage - 1 %>">
-                        <button class="page-number">« Prev</buton>
-                    </a>
-               <% } %>
-
-               <!-- Page Numbers -->
-               <% for(let i=1; i <= totalPages; i++) { %>
-                    <% if (i === currentPage) { %>
-                        <a href="?page=<%= i %>">
-                            <button class="page-number active"><%= i %></button>
-                        </a>
-                    <% } else { %>
-                        <a href="?page=<%= i %>">
-                            <button class="page-number"><%= i %></button>
-                        </a>
+                        <button class="page-number" 
+                                form="catalogue-filter" 
+                                name="page" 
+                                value="<%= currentPage - 1 %>">
+                                Prev
+                        </button>
+                <% } %>
+                <!-- Page Numbers -->
+                <% for(let i=1; i <= totalPages; i++) { %>
+                    <% const isFirst = i === 1 %>
+                    <% const isLast = i === totalPages %>
+                    <% const isViewed = i >= currentPage - 2 && i <= currentPage + 2 %>
+                    <% if (isFirst || isLast || isViewed) { %>
+                        <button class="page-number 
+                                <%= i === currentPage ? 'active' : '' %>" 
+                                form="catalogue-filter" 
+                                name="page" 
+                                value="<%= i %>">
+                                <%= i %>
+                        </button>                    
                     <% } %>
-               <% } %>
+                <% } %>
 
                <!-- Next Page -->
                 <% if (currentPage < totalPages) { %>
-                    <a href="?page=<%= currentPage + 1 %>">
-                        <button class="page-number">Next »</buton>
-                    </a>
-               <% } %>               
-    
+                    <button class="page-number" 
+                            form="catalogue-filter" 
+                            name="page" 
+                            value="<%= currentPage + 1 %>">
+                            Next 
+                    </button>
+                <% } %>               
             </div>
         </footer>
     </div>    
@@ -138,111 +146,30 @@
             <div class="modal-header">
                 <h2>Product</h2>
             </div>
-            <!-- Production Section 1 (original)-->
-            <div id="product-section-1" class="modal-section">
-                <!-- Image -->
-                <div><img id="product-image"src="https://picsum.photos/400/300" alt="Product image"></div>
-                <!-- Description -->
-                <div id="product-content">
-                    <!-- Title -->
-                    <h3 id="product-title">Item this is a very nice product 500ml and 600gb. What would you like?</h3>
-                    <!-- Description -->
-                    <p id="product-description">What to do?</p>
-                    <!-- Price & Button -->
-                    <div id="product-footer">
-                        <p id="product-price">€5.50</p>
-                        <button class="modal-btn">Add to List</button>
-                        <button id="compare-btn">Compare</button>
-                    </div>
-                </div>   
-            </div>
-            <!-- Production Section 2 -->
-            <div id="product-section-2" class="modal-section">
-                <!-- Image -->
-                <div><img id="product-image"src="https://picsum.photos/400/300" alt="Product image"></div>
-                <!-- Description -->
-                <div id="product-content">
-                    <!-- Title -->
-                    <h3 id="product-title">Item this is a very nice product 500ml and 600gb. What would you like?</h3>
-                    <!-- Description -->
-                    <p id="product-description">What to do?</p>
-                    <!-- Price & Button -->
-                    <div id="product-footer">
-                        <p id="product-price">€5.50</p>
-                        <button class="modal-btn">Add to List</button>
-                        <button id="compare-btn">Compare</button>
-                    </div>
-                </div>   
-            </div>            
-            <div>
-                <table>
-                    <thead>
-                        <th>Brand</th>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Compare</th>
-                    </thead>
-                </table>
-            </div>   
+            <!-- Product Modal Contents updated through fetch-->
+            <div id="modal-content"></div>   
             <!-- Modal Footer --> 
             <div class="modal-footer">
                 <button id="modal-close-btn">Close</button>
             </div>                       
         </div>
     </div>
+    <!-- Popup Alert -->
+     <div id="catalogue-alert">
+        <p id="catalogue-alert-msg"></p>
+     </div>
     <%- include("./partials/footer.ejs") %> 
-
-    <script>
-        //Wait for DOM to load
-        document.addEventListener("DOMContentLoaded", () => {
-            //Initialisation
-            const modal = document.getElementById("catalogue-modal");
-            const closeModalBTN = document.getElementById("modal-close-btn");
-            //Event delagation
-            document.addEventListener("click", (e) => {
-                //Open the product modal
-                if(e.target.classList.contains("product-image")) {
-                    modal.style.display = "block";
-                }
-                //Close the product modal
-                if(e.target === closeModalBTN) {
-                    modal.style.display = "none";
-                }
-                //Add product to the list
-                if(e.target.classList.contains("cardBTN")) {
-                    const productId = e.target.dataset.id;
-                    //console.log("Clicked add button:", productId);
-                    addProductToList(productId);
-                }
-            });
-        });
-
-        async function addProductToList(productId) {
-            //Attempt to create a post request
-            //If successful, create alert otherwise produce an error
-            try {
-                const response = await fetch("/catalogue/add", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ id: productId })
-                });
-                console.log("Product added");
-            }
-            catch (err) {
-                console.log("Add product failed: ", err);
-            }
-        }
-    </script>
+    
 
     <!-- Floating Dark Mode Toggle -->
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode">
       <img id="themeIcon" src="/img/darkMode_svg.svg" width="22" height="22" alt="Theme icon...">
     </button>
 
-    <!--Calling JavaScript for Theme function 😺-->
+    <!--Calling JavaScript for Theme function -->
     <script src="/js/theme.js"></script>
+    <!--Calling JavaScript for Catalogue DOM functions -->
+    <script src="/js/catalogue.js"></script>
 
 </body>
 </html>
