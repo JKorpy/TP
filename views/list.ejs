@@ -34,9 +34,9 @@
                 <% if (items.length > 0) { %>
                     <% items.forEach(item => { %>
                         <tr data-id="<%= item.id %>">
-                            <td class="product-name">(<%= item.name %>) <%= item.description %></td>
+                            <td class="product-name">(<%= item.brand %>) <%= item.name %></td>
                             <td class="product-qty"><%= item.quantity %></td>
-                            <td class="product-price" data-price="<%=(item.price * item.quantity).toFixed(2) %>">€<%=(item.price * item.quantity).toFixed(2) %></td>
+                            <td class="product-price" data-price="<%=parseFloat(item.total).toFixed(2) %>">€<%=parseFloat(item.total).toFixed(2)%></td>
                             <td>
                                 <div class="edit-buttons">
                                     <button type="button" class="quantity-btn quantity-decrease">−</button>
@@ -53,94 +53,14 @@
                 <% } %>                
                 <!-- Final Row (Total) --> 
                 <tr id="list-footer">
-                    <td colspan="5">Total: £0.00</td>
+                    <% const fullTotal = items.reduce((sum, item) => sum + parseFloat(item.total), 0); %>
+                    <td colspan="5">Total: €<%= fullTotal.toFixed(2) %></td>
                 </tr>
             </tbody>
         </table>
     </div>
     <%- include("./partials/footer.ejs") %> 
-    <script>
-        // Wait for the DOM to be loaded before executing this script
-        document.addEventListener("DOMContentLoaded", () => {
 
-            const table = document.getElementById("list-table");
-
-            // Event Delegation (Listens to the child element that was clicked)
-            const tbody = table.querySelector("tbody");
-            tbody.addEventListener("click", async (e) => {
-
-                // Find the closest row to the clicked element
-                const row = e.target.closest("tr");;
-                console.log(row);
-                if (!row || !row.dataset.id) return; 
-
-                // Collect data
-                const id = row.dataset.id;
-                const quantityElement = row.querySelector(".product-qty");
-                const priceElement = row.querySelector(".product-price");
-
-                // Increase Quantity
-                if (e.target.classList.contains("quantity-increase")) {
-                    updateQuantity(`/list/${id}/increase`, quantityElement, priceElement);
-                } 
-
-                // Decrease Quantity
-                if (e.target.classList.contains("quantity-decrease")) {
-                    updateQuantity(`/list/${id}/decrease`, quantityElement, priceElement);
-                }
-
-                // Delete Item
-                if (e.target.classList.contains("product-delete-btn")) {
-                    try {
-                        // Create a delete request
-                        await fetch(`/list/${id}`, { method: "DELETE" });
-                        //Delete current row from DOM
-                        row.remove();
-                        //Update the total price
-                        table.append
-                        updateTotal();
-                    } catch (err) {
-                        console.error("Failed to delete item:", err);
-                    }
-                }
-            });
-
-            // Update Total Price
-            function updateTotal() {
-                let total = 0;
-                //Accessing the product element's data price and add it to total
-                tbody.querySelectorAll(".product-price").forEach(priceElement => {
-                    total += Number(priceElement.dataset.price);
-                });
-                // :cat, (U+1F408), 😺 cat.
-                document.querySelector("#list-footer td").textContent = `Total: €${total.toFixed(2)}`;
-            }
-
-            async function updateQuantity(url, quantityElement, priceElement) {
-                try {
-                    //Put Reqeust
-                    const response = await fetch(url, { method: "PUT" });
-                    //Server response in JSON format
-                    const item = await response.json();
-                    //Initialise a price
-                    const newPrice = item.price * item.quantity;
-                    //Update Quantity
-                    quantityElement.textContent = item.quantity;
-                    //Update Price
-                    priceElement.dataset.price = newPrice;
-                    priceElement.textContent = `€${newPrice.toFixed(2)}`;
-                    //Recalculate Total
-                    updateTotal();
-                }
-                catch (err) {
-                    console.error("Failed to update quantity:", err);
-                }
-            }
-
-            // Execute on page load
-            updateTotal();
-        });
-    </script>
 
     
     <!-- Floating Dark Mode Toggle -->
@@ -149,6 +69,6 @@
     </button>
 
     <script src="/js/theme.js"></script>
-    
+    <script src="/js/list.js"></script>
 </body>
 </html>
