@@ -14,3 +14,7 @@ A comparative shopping website that allows clients to produce a list of items wi
 
 #### Note:
 When running the website, college wifi does not work. Use a personal hotspot instead.
+
+### Setup:
+1. npm install
+2. npm test -- --coverage --verbose --silent 
